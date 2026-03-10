@@ -1,0 +1,2126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget Chef · 月底救星</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1208;
+  --paper: #faf7f2;
+  --cream: #f2ede4;
+  --warm: #e8dfd0;
+  --border: #d4c9b8;
+  --muted: #8c7e6a;
+  --faint: #c4b9a8;
+  --ember: #c84b2f;
+  --gold: #b8860b;
+  --sage: #5a7a5a;
+  --sky: #3a6b8a;
+  --urgent: #c84b2f;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --radius: 3px;
+  --shadow: 0 2px 12px rgba(26,18,8,0.08);
+  --shadow-lg: 0 8px 32px rgba(26,18,8,0.14);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Paper texture */
+body::after {
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:999;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  opacity:0.6;
+}
+
+/* ── LAYOUT ── */
+.app { max-width: 900px; margin: 0 auto; padding: 0 16px 80px; }
+
+/* ── HEADER ── */
+.header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 32px 0 24px; border-bottom: 2px solid var(--ink);
+  margin-bottom: 28px;
+}
+.header-left {}
+.logo {
+  font-family: var(--font-display); font-size: 28px; font-weight: 700;
+  line-height: 1; letter-spacing: -0.02em;
+}
+.logo-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.2em; text-transform: uppercase; margin-top: 4px; font-family: var(--font-mono); }
+.header-right { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; align-items:center; }
+
+/* Language selector */
+.lang-btn {
+  background: none; border: 1px solid var(--border); padding: 5px 10px;
+  font-family: var(--font-mono); font-size: 11px; cursor: pointer;
+  border-radius: var(--radius); color: var(--muted); transition: all 0.15s;
+  letter-spacing: 0.05em;
+}
+.lang-btn.active, .lang-btn:hover {
+  background: var(--ink); color: var(--paper); border-color: var(--ink);
+}
+
+/* ── SECTION LABELS ── */
+.section-label {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.25em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ── CARDS ── */
+.card {
+  background: #fff; border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px 22px;
+  box-shadow: var(--shadow); margin-bottom: 16px;
+}
+.card.highlight { border-color: var(--gold); border-left: 3px solid var(--gold); }
+.card.urgent-card { border-color: var(--urgent); border-left: 3px solid var(--urgent); }
+.card.sage-card { border-left: 3px solid var(--sage); }
+
+/* ── SETUP GRID ── */
+.setup-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;
+}
+@media(max-width:600px){ .setup-grid{grid-template-columns:1fr} }
+
+.field-label {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+  display:block;
+}
+
+input[type="number"], input[type="text"], select, textarea {
+  width: 100%; background: var(--cream); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 9px 12px;
+  font-family: var(--font-body); font-size: 14px; color: var(--ink);
+  outline: none; transition: border-color 0.15s;
+  -webkit-appearance: none;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--gold); }
+
+textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+/* ── RADIO GROUPS ── */
+.radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.radio-chip {
+  border: 1px solid var(--border); border-radius: 20px;
+  padding: 6px 14px; cursor: pointer; font-size: 12px;
+  transition: all 0.15s; background: none; color: var(--muted);
+  user-select: none;
+}
+.radio-chip:hover { border-color: var(--gold); color: var(--gold); }
+.radio-chip.selected { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 22px; border-radius: var(--radius); cursor: pointer;
+  font-family: var(--font-body); font-size: 13px; font-weight: 500;
+  transition: all 0.15s; border: none; text-decoration: none;
+}
+.btn-primary {
+  background: var(--ink); color: var(--paper);
+}
+.btn-primary:hover { background: #2d2010; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(26,18,8,0.2); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-outline {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+}
+.btn-outline:hover { border-color: var(--ink); color: var(--ink); }
+.btn-ember { background: var(--ember); color: #fff; }
+.btn-ember:hover { background: #a83a20; }
+
+/* ── PANTRY ── */
+.pantry-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.pantry-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--cream); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 10px 4px 12px;
+  font-size: 12px; color: var(--ink);
+}
+.pantry-tag.expiring {
+  background: #fff3f0; border-color: var(--urgent); color: var(--urgent);
+}
+.pantry-tag.half {
+  background: #fff8e8; border-color: var(--gold); color: var(--gold);
+}
+.pantry-tag .remove-btn {
+  background: none; border: none; cursor: pointer; color: var(--muted);
+  font-size: 14px; line-height: 1; padding: 0 2px;
+}
+.pantry-tag .remove-btn:hover { color: var(--urgent); }
+
+.pantry-input-row { display: flex; gap: 6px; align-items: flex-end; }
+.pantry-status-row { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.status-chip {
+  font-size: 11px; padding: 3px 8px; border-radius: 10px; cursor: pointer;
+  border: 1px solid transparent; transition: all 0.12s; font-family: var(--font-mono);
+}
+.status-chip[data-val="expiring"] { background:#fff3f0; border-color:var(--urgent); color:var(--urgent); }
+.status-chip[data-val="half"]     { background:#fff8e8; border-color:var(--gold);   color:var(--gold); }
+.status-chip[data-val="fresh"]    { background:#f0f8f0; border-color:var(--sage);   color:var(--sage); }
+.status-chip.chosen { opacity:1; font-weight:600; }
+.status-chip:not(.chosen) { opacity:0.5; }
+
+/* ── FAVORITES ── */
+.fav-input-row { display: flex; gap: 6px; }
+.fav-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: #f0f6fa; border: 1px solid #b8d4e8;
+  border-radius: 20px; padding: 4px 10px 4px 12px; font-size: 12px; color: var(--sky);
+}
+.fav-tag .remove-btn { color: #a0c4d8; }
+
+/* ── BUDGET BAR ── */
+.budget-display { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
+.budget-big { font-family: var(--font-display); font-size: 36px; font-weight: 700; line-height: 1; }
+.budget-big.ok { color: var(--sage); }
+.budget-big.warn { color: var(--gold); }
+.budget-big.danger { color: var(--urgent); }
+.budget-meta { text-align: right; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.progress-track { height: 6px; background: var(--warm); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width 1s cubic-bezier(.4,0,.2,1); }
+
+/* ── PLAN TABS ── */
+.plan-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+.plan-tab {
+  flex: 1; padding: 10px 8px; text-align: center; cursor: pointer;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  font-size: 12px; font-weight: 500; transition: all 0.15s;
+  background: none; color: var(--muted);
+}
+.plan-tab.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.plan-tab:hover:not(.active) { border-color: var(--ink); color: var(--ink); }
+
+/* ── RECIPE CARD ── */
+.recipe-card {
+  background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden; margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.recipe-header {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.recipe-name {
+  font-family: var(--font-display); font-size: 18px; font-weight: 700;
+  line-height: 1.2; margin-bottom: 4px;
+}
+.recipe-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+.recipe-tag {
+  font-family: var(--font-mono); font-size: 9px; padding: 2px 7px;
+  border-radius: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.tag-quick    { background: #f0f8f0; color: var(--sage); }
+.tag-budget   { background: #fff8e8; color: var(--gold); }
+.tag-quality  { background: #f0f4ff; color: var(--sky); }
+.tag-creative { background: #fff0f8; color: #a0307a; }
+.tag-balanced { background: #f5f0ff; color: #6a3ab8; }
+.tag-urgent   { background: #fff3f0; color: var(--urgent); }
+
+.recipe-cost {
+  font-family: var(--font-display); font-size: 22px; font-weight: 700;
+  color: var(--ember); white-space: nowrap; margin-left: 12px;
+}
+
+.recipe-body { padding: 16px 20px; }
+.recipe-ingredients { margin-bottom: 14px; }
+.ingredient-row {
+  display: flex; justify-content: space-between; padding: 5px 0;
+  border-bottom: 1px dashed var(--warm); font-size: 13px;
+}
+.ingredient-row:last-child { border-bottom: none; }
+.ingredient-name { color: var(--ink); }
+.ingredient-price { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.ingredient-urgent { color: var(--urgent); font-weight: 500; }
+.ingredient-urgent::after { content: ' ⚡'; }
+
+/* step styles moved to .step-list */
+
+.recipe-footer {
+  padding: 12px 20px; background: var(--cream);
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 8px; border-top: 1px solid var(--border);
+}
+.recipe-stats { display: flex; gap: 16px; }
+.stat-pill {
+  display: flex; align-items: center; gap: 4px;
+  font-family: var(--font-mono); font-size: 10px; color: var(--muted);
+}
+.stat-pill strong { color: var(--ink); }
+
+/* ESG banner */
+.esg-banner {
+  background: linear-gradient(135deg, #f0f8f0 0%, #e8f4e8 100%);
+  border: 1px solid #b8d8b8; border-radius: var(--radius);
+  padding: 14px 18px; display: flex; gap: 16px; flex-wrap: wrap;
+  align-items: center; margin-top: 8px;
+}
+.esg-stat { text-align: center; }
+.esg-num {
+  font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--sage);
+}
+.esg-lbl { font-size: 10px; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; }
+
+/* ── LOADING ── */
+.loading-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(250,247,242,0.9); z-index: 100;
+  flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+}
+.loading-spinner {
+  width: 36px; height: 36px; border: 2px solid var(--warm);
+  border-top-color: var(--ember); border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.loading-msg { font-family: var(--font-mono); font-size: 12px; color: var(--muted); letter-spacing: 0.15em; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── AI STREAM ── */
+.ai-stream {
+  font-size: 13px; line-height: 1.7; color: var(--ink);
+  white-space: pre-wrap; min-height: 40px;
+}
+.ai-cursor {
+  display: inline-block; width: 2px; height: 14px;
+  background: var(--ember); margin-left: 2px; vertical-align: middle;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ── MISC ── */
+.hidden { display: none !important; }
+.flex-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.spacer { height: 8px; }
+hr.dashed { border: none; border-top: 1px dashed var(--border); margin: 14px 0; }
+
+.fade-in { animation: fadeUp 0.4s ease forwards; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+/* urgency notice */
+.urgency-notice {
+  background: #fff3f0; border: 1px solid #f4b8b0; border-radius: var(--radius);
+  padding: 10px 14px; font-size: 12px; color: var(--urgent);
+  display: flex; gap: 8px; align-items: flex-start;
+}
+.urgency-notice strong { font-weight: 600; }
+
+/* results area */
+#results { display: none; }
+
+.results-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+}
+.results-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; }
+
+/* scroll hint */
+.scroll-hint {
+  text-align: center; padding: 6px;
+  font-family: var(--font-mono); font-size: 10px; color: var(--faint);
+  letter-spacing: 0.2em;
+}
+
+/* mobile */
+@media(max-width:500px) {
+  .plan-tabs { flex-direction:column; }
+  .budget-big { font-size: 28px; }
+  .header { flex-direction: column; gap: 12px; }
+}
+
+/* ── TASTE PROFILE ── */
+.taste-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media(max-width:500px){.taste-grid{grid-template-columns:1fr}}
+
+.slider-row { margin-bottom:10px; }
+.slider-label { display:flex; justify-content:space-between; margin-bottom:4px; font-size:12px; }
+.slider-label span:first-child { color:var(--ink); }
+.slider-label .slider-val { font-family:var(--font-mono); font-size:11px; color:var(--gold); font-weight:600; }
+
+input[type=range] {
+  -webkit-appearance:none; width:100%; height:4px;
+  background:var(--warm); border-radius:2px; outline:none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+  background:var(--ink); cursor:pointer; border:2px solid var(--paper);
+  box-shadow:0 1px 4px rgba(0,0,0,0.2);
+}
+input[type=range]::-moz-range-thumb {
+  width:16px; height:16px; border-radius:50%;
+  background:var(--ink); cursor:pointer; border:2px solid var(--paper);
+}
+
+/* ── NUTRITION TRACKER ── */
+.nutrition-tracker {
+  background:#fff; border:1px solid var(--border);
+  border-radius:var(--radius); padding:16px 18px;
+  margin-bottom:16px; box-shadow:var(--shadow);
+}
+.nutrition-tracker-title {
+  font-family:var(--font-mono); font-size:10px; letter-spacing:0.2em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:12px;
+}
+.macro-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.macro-label { font-size:11px; color:var(--muted); width:66px; flex-shrink:0; }
+.macro-bar-track { flex:1; height:8px; background:var(--warm); border-radius:4px; overflow:hidden; }
+.macro-bar-fill { height:100%; border-radius:4px; transition:width 0.6s cubic-bezier(.4,0,.2,1); }
+.macro-val { font-family:var(--font-mono); font-size:11px; color:var(--ink); width:68px; text-align:right; flex-shrink:0; }
+
+/* ── HISTORY HEATMAP ── */
+.history-section { margin-bottom:16px; }
+.week-grid { display:flex; gap:4px; flex-wrap:wrap; }
+.day-cell {
+  width:36px; height:36px; border-radius:var(--radius);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  font-size:9px; font-family:var(--font-mono); cursor:pointer;
+  transition:transform 0.1s; border:1px solid transparent;
+  position:relative;
+}
+.day-cell:hover { transform:scale(1.1); border-color:var(--border); }
+.day-cell.empty { background:var(--cream); color:var(--faint); }
+.day-cell.has-data { background:var(--ink); color:var(--paper); }
+.day-cell.today { outline:2px solid var(--gold); }
+.day-cell .day-flag { font-size:14px; line-height:1; }
+.day-cell .day-label { font-size:8px; margin-top:1px; opacity:0.7; }
+
+/* ── STEP CARDS ── */
+.step-list { display:flex; flex-direction:column; gap:6px; }
+.step-line { font-size:13px; line-height:1.6; color:var(--ink); padding:4px 0; }
+
+/* tooltip for day cells */
+.day-tooltip {
+  position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
+  background:var(--ink); color:var(--paper); padding:4px 8px; border-radius:3px;
+  font-size:10px; white-space:nowrap; pointer-events:none; z-index:10;
+  opacity:0; transition:opacity 0.15s;
+}
+.day-cell:hover .day-tooltip { opacity:1; }
+
+/* ── TASTE RADAR visual ── */
+.taste-summary {
+  display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;
+}
+.taste-pill {
+  font-size:11px; padding:3px 9px; border-radius:10px;
+  background:var(--cream); border:1px solid var(--border);
+  font-family:var(--font-mono); color:var(--muted);
+}
+.taste-pill.active { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+
+
+#apiKeyBar { transition: max-height 0.4s ease, padding 0.4s ease; max-height:60px; overflow:visible; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+
+<!-- API Key bar (hidden by default if key already set) -->
+<div id="apiKeyBar" style="background:var(--cream);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;">
+  <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;white-space:nowrap">🔑 ANTHROPIC KEY</span>
+  <input type="password" id="apiKeyInput" placeholder="sk-ant-..." 
+    style="flex:1;min-width:200px;max-width:380px;font-family:var(--font-mono);font-size:12px;background:#fff;padding:5px 10px"
+    oninput="saveApiKey(this.value)">
+  <span id="apiKeyStatus" style="font-family:var(--font-mono);font-size:10px;color:var(--faint)">not set</span>
+  <span style="font-size:11px;color:var(--faint)">· <a href="https://console.anthropic.com/keys" target="_blank" style="color:var(--sky)">Get key</a> · stored in browser only, never sent anywhere except Anthropic</span>
+</div>
+<header class="header">
+  <div class="header-left">
+    <div class="logo">Budget Chef <span style="opacity:0.4">·</span> 月底救星</div>
+    <div class="logo-sub" id="tagline">What can I afford tonight?</div>
+  </div>
+  <div class="header-right">
+    <button class="lang-btn active" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('zh')">中文</button>
+    <button class="lang-btn" onclick="setLang('ms')">BM</button>
+    <button class="lang-btn" onclick="setLang('ja')">日本語</button>
+  </div>
+</header>
+
+<!-- ══ SETUP SECTION ══ -->
+<div id="setupSection">
+
+  <!-- Budget + Location -->
+  <div class="section-label" data-i18n="setup_budget">Budget & Location</div>
+  <div class="setup-grid">
+    <div class="card">
+      <label class="field-label" data-i18n="monthly_budget">Monthly Food Budget</label>
+      <div style="display:flex;gap:6px;align-items:center">
+        <select id="currencySelect" style="width:75px;flex-shrink:0">
+          <option value="USD">USD $</option>
+          <option value="CNY" selected>CNY ¥</option>
+          <option value="MYR">MYR RM</option>
+          <option value="JPY">JPY ¥</option>
+          <option value="SGD">SGD $</option>
+          <option value="EUR">EUR €</option>
+          <option value="GBP">GBP £</option>
+        </select>
+        <input type="number" id="budgetInput" value="800" min="10" max="99999" step="10" placeholder="800">
+      </div>
+      <div class="spacer"></div>
+      <label class="field-label" data-i18n="already_spent">Already spent this month</label>
+      <input type="number" id="spentInput" value="512" min="0" step="1" placeholder="0">
+    </div>
+
+    <div class="card">
+      <label class="field-label" data-i18n="location">Your Location / City</label>
+      <input type="text" id="locationInput" placeholder="e.g. Shanghai, Kuala Lumpur, Bangi, Tokyo" value="Bangi" oninput="updateRegionBadge(this.value)">
+      <div class="spacer"></div>
+      <label class="field-label" data-i18n="dining_mode">Dining Preference</label>
+      <div class="radio-group" id="diningMode">
+        <div class="radio-chip selected" data-val="cook" onclick="selectChip(this,'diningMode')">🍳 <span data-i18n="cook_home">Cook at home</span></div>
+        <div class="radio-chip" data-val="delivery" onclick="selectChip(this,'diningMode')">🛵 <span data-i18n="delivery">Delivery</span></div>
+        <div class="radio-chip" data-val="both" onclick="selectChip(this,'diningMode')">🔀 <span data-i18n="both">Both</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cooking Skill -->
+  <div class="section-label" data-i18n="cooking_skill_label">Cooking Skill Level</div>
+  <div class="card" id="cookingSkillCard">
+    <div class="radio-group" id="cookSkill" style="gap:10px">
+      <div class="radio-chip" data-val="none" onclick="selectChip(this,'cookSkill')">
+        🫙 <span data-i18n="skill_none">No cook – just boil/microwave</span>
+      </div>
+      <div class="radio-chip selected" data-val="basic" onclick="selectChip(this,'cookSkill')">
+        🥚 <span data-i18n="skill_basic">Basic – eggs, stir-fry, noodles</span>
+      </div>
+      <div class="radio-chip" data-val="medium" onclick="selectChip(this,'cookSkill')">
+        🍳 <span data-i18n="skill_medium">Intermediate – sauces, roasting</span>
+      </div>
+      <div class="radio-chip" data-val="advanced" onclick="selectChip(this,'cookSkill')">
+        👨‍🍳 <span data-i18n="skill_advanced">Advanced – braising, marinating</span>
+      </div>
+    </div>
+    <div id="skillDescription" style="margin-top:10px;font-size:12px;color:var(--muted);font-style:italic"></div>
+  </div>
+
+  <!-- Pantry: What's in your fridge -->
+  <div class="section-label" data-i18n="pantry_label">What's in Your Fridge / Pantry</div>
+  <div class="card">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px" data-i18n="pantry_hint">
+      Mark items as expiring soon (⚡) or half-used (½) — these get priority in your recipe.
+    </div>
+
+    <!-- Add item row -->
+    <div class="pantry-input-row">
+      <input type="text" id="pantryItemInput" placeholder="e.g. eggs, spinach, tofu" style="flex:1" onkeydown="if(event.key==='Enter')addPantryItem()">
+      <div class="pantry-status-row" id="pantryStatusPicker" style="margin:0">
+        <span class="status-chip chosen" data-val="fresh" onclick="selectPantryStatus(this)">fresh</span>
+        <span class="status-chip" data-val="half" onclick="selectPantryStatus(this)">½ left</span>
+        <span class="status-chip" data-val="expiring" onclick="selectPantryStatus(this)">⚡ expiring</span>
+      </div>
+      <button class="btn btn-outline" onclick="addPantryItem()" style="white-space:nowrap" data-i18n="add">+ Add</button>
+    </div>
+
+    <div class="pantry-list" id="pantryList" style="margin-top:12px"></div>
+    <div style="margin-top:8px;font-size:11px;color:var(--faint)" data-i18n="pantry_common">Common staples (salt, oil, soy sauce) are always assumed available.</div>
+  </div>
+
+  <!-- Taste Profile -->
+  <div class="section-label" id="tasteLabel">Taste Preferences</div>
+  <div class="card" id="tasteCard">
+    <div class="taste-grid">
+      <div>
+        <div class="slider-row">
+          <div class="slider-label"><span>🌶 Spice Level</span><span class="slider-val" id="spiceVal">Medium</span></div>
+          <input type="range" id="spiceSlider" min="0" max="4" value="2" oninput="updateTasteVals()">
+        </div>
+        <div class="slider-row">
+          <div class="slider-label"><span>🍬 Sweet ↔ Savoury</span><span class="slider-val" id="sweetVal">Balanced</span></div>
+          <input type="range" id="sweetSlider" min="0" max="4" value="2" oninput="updateTasteVals()">
+        </div>
+      </div>
+      <div>
+        <div class="slider-row">
+          <div class="slider-label"><span>🧂 Salt Intensity</span><span class="slider-val" id="saltVal">Normal</span></div>
+          <input type="range" id="saltSlider" min="0" max="4" value="2" oninput="updateTasteVals()">
+        </div>
+        <div class="slider-row">
+          <div class="slider-label"><span>🍋 Sour / Tangy</span><span class="slider-val" id="sourVal">Mild</span></div>
+          <input type="range" id="sourSlider" min="0" max="4" value="1" oninput="updateTasteVals()">
+        </div>
+      </div>
+    </div>
+    <div class="taste-summary" id="tasteSummary"></div>
+  </div>
+
+  <!-- Favorites / Loved dishes -->
+  <div class="section-label" data-i18n="favorites_label">Favourite Dishes & Ingredients</div>
+  <div class="card">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px" data-i18n="favorites_hint">
+      Tell us what you love to eat — we'll always try to match your preferences.
+    </div>
+    <div class="fav-input-row">
+      <input type="text" id="favInput" placeholder="e.g. salmon rice bowl, mapo tofu, rendang" style="flex:1" onkeydown="if(event.key==='Enter')addFavorite()">
+      <button class="btn btn-outline" onclick="addFavorite()" data-i18n="add">+ Add</button>
+    </div>
+    <div class="pantry-list" id="favList" style="margin-top:10px"></div>
+
+    <hr class="dashed">
+    <label class="field-label" data-i18n="dietary_label">Dietary Restrictions</label>
+    <div class="radio-group" id="dietaryGroup">
+      <div class="radio-chip" data-val="none" onclick="toggleDiet(this)" data-i18n="diet_none">None</div>
+      <div class="radio-chip" data-val="halal" onclick="toggleDiet(this)">🌙 Halal</div>
+      <div class="radio-chip" data-val="vegetarian" onclick="toggleDiet(this)">🥗 Vegetarian</div>
+      <div class="radio-chip" data-val="vegan" onclick="toggleDiet(this)">🌱 Vegan</div>
+      <div class="radio-chip" data-val="glutenfree" onclick="toggleDiet(this)" data-i18n="diet_gf">Gluten-Free</div>
+      <div class="radio-chip" data-val="dairyfree" onclick="toggleDiet(this)" data-i18n="diet_df">Dairy-Free</div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px">
+    <button class="btn btn-outline" onclick="loadDemo()" data-i18n="load_demo">Load Demo Data</button>
+    <button class="btn btn-primary" onclick="generatePlan()" id="generateBtn">
+      <span data-i18n="generate_btn">✦ Generate My Meal Plan</span>
+    </button>
+  </div>
+
+</div><!-- end setupSection -->
+
+<!-- ══ RESULTS ══ -->
+<div id="results" class="fade-in">
+
+  <div class="results-header">
+    <div class="results-title" id="resultsTitle">Tonight's Plan</div>
+    <button class="btn btn-outline" onclick="resetForm()" data-i18n="recalculate">↺ Recalculate</button>
+  </div>
+
+  <!-- Budget summary -->
+  <div class="card" id="budgetSummaryCard">
+    <div class="budget-display">
+      <div>
+        <div class="field-label" data-i18n="daily_allowance">Today's Allowance</div>
+        <div class="budget-big" id="dailyAllowanceDisplay">—</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px" id="budgetStatusLine"></div>
+      </div>
+      <div class="budget-meta" id="budgetMeta"></div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <!-- Urgency notice -->
+  <div class="urgency-notice hidden" id="urgencyNotice">
+    <span>⚡</span>
+    <div id="urgencyText"></div>
+  </div>
+
+  <!-- Plan tabs -->
+  <!-- Nutrition Day Tracker -->
+  <div id="nutritionTracker" class="nutrition-tracker" style="display:none">
+    <div class="nutrition-tracker-title">📊 Today's Nutrition — Running Total</div>
+    <div class="macro-row">
+      <div class="macro-label">Calories</div>
+      <div class="macro-bar-track"><div class="macro-bar-fill" id="nbar-cal" style="background:#e87a5a;width:0%"></div></div>
+      <div class="macro-val" id="nval-cal">0 / 2000</div>
+    </div>
+    <div class="macro-row">
+      <div class="macro-label">Protein</div>
+      <div class="macro-bar-track"><div class="macro-bar-fill" id="nbar-pro" style="background:#5a8aba;width:0%"></div></div>
+      <div class="macro-val" id="nval-pro">0 / 50g</div>
+    </div>
+    <div class="macro-row">
+      <div class="macro-label">Carbs</div>
+      <div class="macro-bar-track"><div class="macro-bar-fill" id="nbar-carb" style="background:#e8c547;width:0%"></div></div>
+      <div class="macro-val" id="nval-carb">0 / 260g</div>
+    </div>
+    <div class="macro-row">
+      <div class="macro-label">Fat</div>
+      <div class="macro-bar-track"><div class="macro-bar-fill" id="nbar-fat" style="background:#7ab87a;width:0%"></div></div>
+      <div class="macro-val" id="nval-fat">0 / 65g</div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px" id="nutritionNote"></div>
+  </div>
+
+  <div class="section-label" data-i18n="meal_plans">Meal Plans</div>
+  <div class="plan-tabs">
+    <button class="plan-tab active" onclick="showPlan('frugal',this)" data-i18n="tab_frugal">💸 Max Savings</button>
+    <button class="plan-tab" onclick="showPlan('quality',this)" data-i18n="tab_quality">✨ Good Life</button>
+    <button class="plan-tab" onclick="showPlan('balanced',this)" data-i18n="tab_balanced">⚖️ Balanced</button>
+  </div>
+
+  <!-- Plan content areas -->
+  <div id="plan-frugal"></div>
+  <div id="plan-quality" class="hidden"></div>
+  <div id="plan-balanced" class="hidden"></div>
+
+  <!-- ESG -->
+  <div class="section-label" data-i18n="esg_label">Environmental Impact</div>
+  <div class="card sage-card" id="esgCard">
+    <div style="font-weight:600;margin-bottom:10px;font-size:13px" id="esgBadge"></div>
+    <div class="esg-banner" id="esgBanner"></div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted);line-height:1.6" id="esgMessage"></div>
+  </div>
+
+</div>
+
+<div id="historySection" class="history-section"></div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-msg" id="loadingMsg">Analysing your kitchen...</div>
+</div>
+
+</div><!-- .app -->
+
+<script>
+// ══════════════════════════════════════════════════
+// INTERNATIONALISATION
+// ══════════════════════════════════════════════════
+
+const LANGS = {
+  en: {
+    tagline: "What can I afford tonight?",
+    setup_budget: "Budget & Location",
+    monthly_budget: "Monthly Food Budget",
+    already_spent: "Already spent this month",
+    location: "Your Location / City",
+    dining_mode: "Dining Preference",
+    cook_home: "Cook at home",
+    delivery: "Delivery",
+    both: "Both",
+    cooking_skill_label: "Cooking Skill Level",
+    skill_none: "No cook – just boil / microwave",
+    skill_basic: "Basic – eggs, stir-fry, noodles",
+    skill_medium: "Intermediate – sauces, roasting",
+    skill_advanced: "Advanced – braising, marinating",
+    pantry_label: "What's in Your Fridge / Pantry",
+    pantry_hint: "Mark items as expiring soon (⚡) or half-used (½) — these get priority in your recipe.",
+    add: "+ Add",
+    pantry_common: "Common staples (salt, oil, soy sauce) are always assumed available.",
+    favorites_label: "Favourite Dishes & Ingredients",
+    favorites_hint: "Tell us what you love to eat — we'll always try to match your preferences.",
+    dietary_label: "Dietary Restrictions",
+    diet_none: "None", diet_gf: "Gluten-Free", diet_df: "Dairy-Free",
+    load_demo: "Load Demo Data",
+    generate_btn: "✦ Generate My Meal Plan",
+    recalculate: "↺ Recalculate",
+    daily_allowance: "Today's Allowance",
+    meal_plans: "Meal Plans",
+    tab_frugal: "💸 Max Savings",
+    tab_quality: "✨ Good Life",
+    tab_balanced: "⚖️ Balanced",
+    esg_label: "Environmental Impact",
+    loading_msgs: ["Checking your pantry...","Scanning nearby deals...","Crunching the numbers...","Crafting your recipe...","Almost ready..."],
+    budget_health: ["Comfortable 🟢","On track 🟡","Getting tight 🟠","End-of-month mode 🔴"],
+    skill_desc: {none:"Recipes use only boiling, microwave, or no-cook methods.",basic:"Recipes involve simple frying, scrambled eggs, instant noodles.",medium:"Recipes may involve sautéing, simple sauces, oven use.",advanced:"Complex techniques: braises, marinades, layered flavours."},
+    urgency_prefix: "⚡ Priority ingredients in fridge: ",
+    results_title: "Tonight's Plan",
+    ingredients: "Ingredients",
+    steps: "How to Cook",
+    total: "Total",
+    calories: "kcal",
+    time: "min",
+    servings: "servings",
+    save_btn: "♥ Save Recipe",
+    esg_badge_1: "🌱 Eco Starter", esg_badge_2: "🌿 Waste Reducer", esg_badge_3: "🌳 Food Hero",
+    esg_waste: "Food Waste Saved", esg_co2: "CO₂ Avoided", esg_km: "Drive Equivalent",
+    esg_msg: "By using near-expiry and half-used ingredients tonight, you helped divert {w}kg of food from landfill — equivalent to avoiding {co2}kg of CO₂ emissions.",
+    blackbox_intro: "⚗️ Black-Box Fusion detected! Your ingredient combo is... unconventional. Here's a creative way to make it work:",
+    no_pantry_note: "No pantry items added — using recommended market ingredients.",
+    delivery_plan_note: "Based on your delivery preference — ordering options prioritised.",
+  },
+
+  zh: {
+    tagline: "今晚的预算，够吃什么？",
+    setup_budget: "预算与位置",
+    monthly_budget: "本月饮食预算",
+    already_spent: "本月已花费",
+    location: "你的城市/位置",
+    dining_mode: "用餐偏好",
+    cook_home: "自己烹饪",
+    delivery: "外卖",
+    both: "两者都行",
+    cooking_skill_label: "厨艺水平",
+    skill_none: "完全不会做饭 – 只会泡面/微波炉",
+    skill_basic: "基础 – 煎蛋、炒菜、煮面条",
+    skill_medium: "进阶 – 酱汁、烤箱、简单料理",
+    skill_advanced: "高级 – 红烧、腌制、多层次风味",
+    pantry_label: "冰箱/储物柜里有什么？",
+    pantry_hint: "标注即将过期(⚡)或只剩一半(½)的食材 — 这些会被优先使用。",
+    add: "+ 添加",
+    pantry_common: "基础调料（盐、油、酱油）默认已有。",
+    favorites_label: "喜爱的菜肴与食材",
+    favorites_hint: "告诉我们你爱吃什么，我们会优先匹配你的口味。",
+    dietary_label: "饮食限制",
+    diet_none: "无限制", diet_gf: "无麸质", diet_df: "无乳制品",
+    load_demo: "加载演示数据",
+    generate_btn: "✦ 生成我的今日菜单",
+    recalculate: "↺ 重新计算",
+    daily_allowance: "今日可用额度",
+    meal_plans: "餐食方案",
+    tab_frugal: "💸 极致省钱",
+    tab_quality: "✨ 生活质量",
+    tab_balanced: "⚖️ 均衡营养",
+    esg_label: "环保影响力",
+    loading_msgs: ["检查你的冰箱...","扫描周边折扣...","计算最优方案...","生成专属食谱...","快好了..."],
+    budget_health: ["预算充裕 🟢","正常消费 🟡","预算紧张 🟠","月底模式 🔴"],
+    skill_desc: {none:"食谱只用水煮、微波炉或免烹饪方式。",basic:"食谱包含简单煎炒、鸡蛋料理、速食面。",medium:"食谱可能涉及炒酱汁、烤箱使用等。",advanced:"复杂技法：红烧、腌制、多层次风味搭配。"},
+    urgency_prefix: "⚡ 优先使用冰箱里的食材：",
+    results_title: "今晚菜单",
+    ingredients: "食材清单",
+    steps: "烹饪步骤",
+    total: "合计",
+    calories: "千卡",
+    time: "分钟",
+    servings: "人份",
+    save_btn: "♥ 收藏菜谱",
+    esg_badge_1: "🌱 环保新手", esg_badge_2: "🌿 减废达人", esg_badge_3: "🌳 食物英雄",
+    esg_waste: "减少食物损耗", esg_co2: "减少碳排放", esg_km: "等效少开车",
+    esg_msg: "今晚使用了 {w}kg 临期/半剩食材，避免了浪费，相当于减少 {co2}kg 碳排放。",
+    blackbox_intro: "⚗️ 黑盒料理模式启动！你的食材组合有点奇特，但没关系，这是一道创意做法：",
+    no_pantry_note: "未添加冰箱食材 — 使用推荐市场采购方案。",
+    delivery_plan_note: "已根据外卖偏好调整 — 优先推荐点餐选项。",
+  },
+
+  ms: {
+    tagline: "Boleh makan apa malam ini?",
+    setup_budget: "Bajet & Lokasi",
+    monthly_budget: "Bajet Makanan Bulanan",
+    already_spent: "Sudah dibelanjakan bulan ini",
+    location: "Lokasi / Bandar Anda",
+    dining_mode: "Pilihan Makan",
+    cook_home: "Masak sendiri",
+    delivery: "Penghantaran",
+    both: "Kedua-dua",
+    cooking_skill_label: "Tahap Kemahiran Memasak",
+    skill_none: "Tak reti masak – rebus / microwave sahaja",
+    skill_basic: "Asas – goreng telur, tumis, mi segera",
+    skill_medium: "Pertengahan – sos, memanggang, lauk mudah",
+    skill_advanced: "Mahir – rendang, perap, rempah berlapis",
+    pantry_label: "Apa Ada Dalam Peti Sejuk?",
+    pantry_hint: "Tandakan bahan yang hampir luput (⚡) atau tinggal separuh (½) — ini akan diutamakan.",
+    add: "+ Tambah",
+    pantry_common: "Rempah asas (garam, minyak, kicap) dianggap sedia ada.",
+    favorites_label: "Hidangan & Bahan Kegemaran",
+    favorites_hint: "Beritahu kami apa yang anda suka makan.",
+    dietary_label: "Pantang Larang Makanan",
+    diet_none: "Tiada", diet_gf: "Bebas Gluten", diet_df: "Bebas Tenusu",
+    load_demo: "Muatkan Data Demo",
+    generate_btn: "✦ Jana Pelan Makan Saya",
+    recalculate: "↺ Kira Semula",
+    daily_allowance: "Peruntukan Hari Ini",
+    meal_plans: "Pelan Makan",
+    tab_frugal: "💸 Paling Jimat",
+    tab_quality: "✨ Kualiti Hidup",
+    tab_balanced: "⚖️ Seimbang",
+    esg_label: "Impak Alam Sekitar",
+    loading_msgs: ["Memeriksa peti sejuk...","Mencari diskaun berdekatan...","Mengira yang terbaik...","Mencipta resipi...","Hampir siap..."],
+    budget_health: ["Selesa 🟢","Terkawal 🟡","Semakin ketat 🟠","Mod hujung bulan 🔴"],
+    skill_desc: {none:"Resipi hanya guna rebusan atau microwave.",basic:"Resipi mudah: goreng telur, tumis, mi.",medium:"Resipi pertengahan: sos, grill, tumis berlapis.",advanced:"Teknik lanjutan: rendang, perap, rempah berlapis."},
+    urgency_prefix: "⚡ Bahan peti sejuk perlu dihabiskan: ",
+    results_title: "Pelan Malam Ini",
+    ingredients: "Bahan-bahan",
+    steps: "Cara Memasak",
+    total: "Jumlah",
+    calories: "kcal",
+    time: "min",
+    servings: "hidangan",
+    save_btn: "♥ Simpan Resipi",
+    esg_badge_1: "🌱 Pemula Hijau", esg_badge_2: "🌿 Penjimat Sisa", esg_badge_3: "🌳 Wira Makanan",
+    esg_waste: "Sisa Makanan Diselamatkan", esg_co2: "CO₂ Dielak", esg_km: "Setara Pemanduan",
+    esg_msg: "Malam ini anda menyelamatkan {w}kg makanan hampir luput, mengurangkan {co2}kg pelepasan CO₂.",
+    blackbox_intro: "⚗️ Mod Masakan Blackbox! Gabungan bahan anda agak luar biasa — ini cara kreatif untuk menjadikannya sedap:",
+    no_pantry_note: "Tiada bahan peti sejuk — menggunakan cadangan bahan pasaran.",
+    delivery_plan_note: "Disesuaikan untuk penghantaran — pilihan pesanan diutamakan.",
+  },
+
+  ja: {
+    tagline: "今夜の予算で何が食べられる？",
+    setup_budget: "予算と場所",
+    monthly_budget: "月間食費予算",
+    already_spent: "今月の支出済み",
+    location: "お住まいの都市",
+    dining_mode: "食事スタイル",
+    cook_home: "自炊する",
+    delivery: "デリバリー",
+    both: "どちらでも",
+    cooking_skill_label: "料理スキルレベル",
+    skill_none: "料理しない – 電子レンジ・お湯のみ",
+    skill_basic: "初心者 – 卵料理・炒め物・インスタント麺",
+    skill_medium: "中級 – ソース・オーブン・簡単な料理",
+    skill_advanced: "上級 – 煮込み・マリネ・本格料理",
+    pantry_label: "冷蔵庫・棚の在庫",
+    pantry_hint: "もうすぐ期限切れ(⚡)または半分残っている(½)食材は優先的に使います。",
+    add: "+ 追加",
+    pantry_common: "塩・油・醤油などの基本調味料は常にあるものとします。",
+    favorites_label: "好きな料理・食材",
+    favorites_hint: "好きな食べ物を教えてください。なるべく合わせて提案します。",
+    dietary_label: "食事制限",
+    diet_none: "なし", diet_gf: "グルテンフリー", diet_df: "乳製品不使用",
+    load_demo: "デモデータを読み込む",
+    generate_btn: "✦ 今夜のプランを作成",
+    recalculate: "↺ 再計算",
+    daily_allowance: "本日の利用可能額",
+    meal_plans: "食事プラン",
+    tab_frugal: "💸 超節約",
+    tab_quality: "✨ 生活の質",
+    tab_balanced: "⚖️ バランス",
+    esg_label: "環境への影響",
+    loading_msgs: ["冷蔵庫を確認中...","近くのお得情報を検索中...","最適プランを計算中...","レシピを生成中...","もうすぐ完成..."],
+    budget_health: ["余裕あり 🟢","順調 🟡","やや苦しい 🟠","月末モード 🔴"],
+    skill_desc: {none:"レシピはお湯・電子レンジのみです。",basic:"簡単な炒め物・卵料理・インスタント麺。",medium:"ソース・オーブン・少し凝った料理。",advanced:"煮込み・マリネ・本格的な多層フレーバー。"},
+    urgency_prefix: "⚡ 優先使用食材: ",
+    results_title: "今夜のプラン",
+    ingredients: "食材",
+    steps: "作り方",
+    total: "合計",
+    calories: "kcal",
+    time: "分",
+    servings: "人前",
+    save_btn: "♥ レシピを保存",
+    esg_badge_1: "🌱 エコ初心者", esg_badge_2: "🌿 フードロス削減者", esg_badge_3: "🌳 食のヒーロー",
+    esg_waste: "食品ロス削減", esg_co2: "CO₂削減量", esg_km: "車換算距離",
+    esg_msg: "今夜{w}kgの食品ロスを防ぎ、{co2}kgのCO₂排出を削減しました。",
+    blackbox_intro: "⚗️ ブラックボックス料理モード発動！ちょっと不思議な組み合わせですが、こんな創作料理はいかがでしょう：",
+    no_pantry_note: "冷蔵庫食材なし — 推奨市場食材を使用します。",
+    delivery_plan_note: "デリバリー設定に合わせて調整しました。",
+  }
+};
+
+let currentLang = 'en';
+let pantryItems = [];   // {name, status}
+let favorites = [];
+let selectedDiet = [];
+let currentPantryStatus = 'fresh';
+let savedRecipes = [];
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.lang-btn[onclick="setLang('${lang}')"]`).classList.add('active');
+  applyTranslations();
+  updateSkillDesc();
+}
+
+function t(key) { return LANGS[currentLang][key] || LANGS.en[key] || key; }
+
+function applyTranslations() {
+  document.getElementById('tagline').textContent = t('tagline');
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const val = t(key);
+    if (val) el.textContent = val;
+  });
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (el.tagName === 'INPUT' && el.type !== 'submit') {
+      // skip input values
+    }
+  });
+}
+
+// ══════════════════════════════════════════════
+// CHIP SELECTIONS
+// ══════════════════════════════════════════════
+
+function selectChip(el, groupId) {
+  document.querySelectorAll(`#${groupId} .radio-chip`).forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  if (groupId === 'cookSkill') updateSkillDesc();
+  if (groupId === 'diningMode') {
+    const mode = el.getAttribute('data-val');
+    document.getElementById('cookingSkillCard').style.display = (mode === 'delivery') ? 'none' : 'block';
+  }
+}
+
+function updateSkillDesc() {
+  const sel = document.querySelector('#cookSkill .radio-chip.selected');
+  if (!sel) return;
+  const val = sel.getAttribute('data-val');
+  const descs = LANGS[currentLang]?.skill_desc || LANGS.en.skill_desc;
+  document.getElementById('skillDescription').textContent = descs[val] || '';
+}
+
+function toggleDiet(el) {
+  const val = el.getAttribute('data-val');
+  if (val === 'none') {
+    document.querySelectorAll('#dietaryGroup .radio-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedDiet = [];
+    return;
+  }
+  document.querySelector('#dietaryGroup .radio-chip[data-val="none"]').classList.remove('selected');
+  el.classList.toggle('selected');
+  selectedDiet = [...document.querySelectorAll('#dietaryGroup .radio-chip.selected')].map(c => c.getAttribute('data-val'));
+}
+
+// ══════════════════════════════════════════════
+// PANTRY MANAGEMENT
+// ══════════════════════════════════════════════
+
+function selectPantryStatus(el) {
+  document.querySelectorAll('#pantryStatusPicker .status-chip').forEach(c => c.classList.remove('chosen'));
+  el.classList.add('chosen');
+  currentPantryStatus = el.getAttribute('data-val');
+}
+
+function addPantryItem() {
+  const input = document.getElementById('pantryItemInput');
+  const name = input.value.trim();
+  if (!name) return;
+
+  // Allow comma-separated
+  const names = name.split(',').map(s => s.trim()).filter(Boolean);
+  names.forEach(n => {
+    if (!pantryItems.find(i => i.name.toLowerCase() === n.toLowerCase())) {
+      pantryItems.push({ name: n, status: currentPantryStatus });
+    }
+  });
+  input.value = '';
+  renderPantry();
+}
+
+function removePantryItem(idx) {
+  pantryItems.splice(idx, 1);
+  renderPantry();
+}
+
+function renderPantry() {
+  const container = document.getElementById('pantryList');
+  if (pantryItems.length === 0) { container.innerHTML = ''; return; }
+
+  container.innerHTML = pantryItems.map((item, i) => {
+    const cls = item.status === 'expiring' ? 'expiring' : item.status === 'half' ? 'half' : '';
+    const icon = item.status === 'expiring' ? '⚡ ' : item.status === 'half' ? '½ ' : '';
+    return `<span class="pantry-tag ${cls}">${icon}${item.name}<button class="remove-btn" onclick="removePantryItem(${i})">×</button></span>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// FAVORITES
+// ══════════════════════════════════════════════
+
+function addFavorite() {
+  const input = document.getElementById('favInput');
+  const val = input.value.trim();
+  if (!val) return;
+  val.split(',').map(s => s.trim()).filter(Boolean).forEach(v => {
+    if (!favorites.includes(v)) favorites.push(v);
+  });
+  input.value = '';
+  renderFavs();
+}
+
+function removeFav(idx) { favorites.splice(idx, 1); renderFavs(); }
+
+function renderFavs() {
+  document.getElementById('favList').innerHTML = favorites.map((f,i) =>
+    `<span class="fav-tag">${f}<button class="remove-btn" onclick="removeFav(${i})">×</button></span>`
+  ).join('');
+}
+
+// ══════════════════════════════════════════════
+// DEMO DATA
+// ══════════════════════════════════════════════
+
+const DEMO_DATA = {
+  en: {
+    pantry: [
+      {name:'eggs',status:'fresh'},{name:'spinach',status:'expiring'},
+      {name:'tofu',status:'half'},{name:'leftover rice',status:'expiring'},
+      {name:'carrot',status:'fresh'},{name:'lao gan ma chili',status:'fresh'},
+    ],
+    favs: ['fried rice','ramen','salmon bowl'],
+  },
+  zh: {
+    pantry: [
+      {name:'鸡蛋',status:'fresh'},{name:'菠菜',status:'expiring'},
+      {name:'豆腐',status:'half'},{name:'剩饭',status:'expiring'},
+      {name:'胡萝卜',status:'fresh'},{name:'老干妈辣椒酱',status:'fresh'},
+    ],
+    favs: ['炒饭','拉面','三文鱼饭'],
+  },
+  ms: {
+    pantry: [
+      {name:'telur',status:'fresh'},{name:'bayam',status:'expiring'},
+      {name:'tahu',status:'half'},{name:'nasi semalam',status:'expiring'},
+      {name:'lobak',status:'fresh'},
+    ],
+    favs: ['nasi goreng','mi goreng','rendang'],
+  },
+  ja: {
+    pantry: [
+      {name:'卵',status:'fresh'},{name:'ほうれん草',status:'expiring'},
+      {name:'豆腐',status:'half'},{name:'残りご飯',status:'expiring'},
+      {name:'にんじん',status:'fresh'},
+    ],
+    favs: ['チャーハン','ラーメン','卵かけご飯'],
+  },
+};
+
+function loadDemo() {
+  const demo = DEMO_DATA[currentLang] || DEMO_DATA.en;
+  pantryItems = [...demo.pantry];
+  favorites = [...demo.favs];
+  document.getElementById('budgetInput').value = 800;
+  document.getElementById('spentInput').value = 512;
+  renderPantry();
+  renderFavs();
+}
+
+// ══════════════════════════════════════════════
+// BUDGET CALC
+// ══════════════════════════════════════════════
+
+function calcBudget() {
+  const budget = parseFloat(document.getElementById('budgetInput').value) || 800;
+  const spent  = parseFloat(document.getElementById('spentInput').value) || 0;
+  const currency = document.getElementById('currencySelect').value;
+  const today = new Date();
+  const daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+  const daysRemaining = daysInMonth - today.getDate() + 1;
+  const remaining = budget - spent;
+  const daily = Math.max(0, remaining / daysRemaining);
+  const pct = Math.min(100, Math.round(spent / budget * 100));
+
+  const symbols = {USD:'$',CNY:'¥',MYR:'RM ',JPY:'¥',SGD:'S$',EUR:'€',GBP:'£'};
+  const sym = symbols[currency] || '';
+
+  let healthIdx = daily > (budget/daysInMonth) * 1.2 ? 0 : daily > (budget/daysInMonth) * 0.7 ? 1 : daily > 10 ? 2 : 3;
+
+  return { budget, spent, remaining, daily, pct, daysRemaining, currency, sym, healthIdx };
+}
+
+// ══════════════════════════════════════════════
+// CORE: AI PLAN GENERATION
+// ══════════════════════════════════════════════
+
+async function generatePlan() {
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+
+  const b = calcBudget();
+  const diningMode = document.querySelector('#diningMode .radio-chip.selected')?.getAttribute('data-val') || 'cook';
+  const skill = document.querySelector('#cookSkill .radio-chip.selected')?.getAttribute('data-val') || 'basic';
+  const location = document.getElementById('locationInput').value || 'your city';
+
+  showLoading(true);
+
+  const loadingMsgs = LANGS[currentLang]?.loading_msgs || LANGS.en.loading_msgs;
+  let msgIdx = 0;
+  const msgInterval = setInterval(() => {
+    document.getElementById('loadingMsg').textContent = loadingMsgs[msgIdx % loadingMsgs.length];
+    msgIdx++;
+  }, 900);
+
+  try {
+    await new Promise(r => setTimeout(r, 400));
+
+    // Build AI prompt
+    const urgentItems = pantryItems.filter(i => i.status === 'expiring').map(i => i.name);
+    const halfItems   = pantryItems.filter(i => i.status === 'half').map(i => i.name);
+    const freshItems  = pantryItems.filter(i => i.status === 'fresh').map(i => i.name);
+
+    const systemPrompt = buildSystemPrompt(b, diningMode, skill, location, urgentItems, halfItems, freshItems)
+      + (window._getTasteForPrompt ? window._getTasteForPrompt() : '');
+    const data = await callClaude(systemPrompt);
+
+    clearInterval(msgInterval);
+    showLoading(false);
+
+    renderResults(b, data, urgentItems, halfItems);
+    btn.disabled = false;
+
+  } catch(e) {
+    console.warn('Claude API failed, using built-in recipes:', e.message);
+    clearInterval(msgInterval);
+    showLoading(false);
+    btn.disabled = false;
+    // Fallback: use built-in smart mock data based on user inputs
+    const urgentItems2 = pantryItems.filter(i => i.status === 'expiring').map(i => i.name);
+    const halfItems2   = pantryItems.filter(i => i.status === 'half').map(i => i.name);
+    const mockData = buildMockData(b, diningMode, skill);
+    renderResults(b, mockData, urgentItems2, halfItems2);
+  }
+}
+
+
+// ══════════════════════════════════════════════
+// REGION FLAVOUR DATABASE  (city-level)
+// ══════════════════════════════════════════════
+
+function mySeason() {
+  const m = new Date().getMonth();
+  if (m>=10||m<=2) return 'northeast monsoon — mangosteen, jackfruit in season';
+  if (m>=3&&m<=5) return 'dry season — rambutan, durian approaching';
+  return 'inter-monsoon — local greens cheapest';
+}
+function cnSeason() {
+  const m = new Date().getMonth();
+  if (m<=1||m===11) return '冬季 — 白菜、萝卜、冬瓜最便宜';
+  if (m<=4) return '春季 — 春笋、荠菜、韭菜正鲜';
+  if (m<=7) return '夏季 — 丝瓜、茄子、豆角丰收期';
+  return '秋季 — 莲藕、山药、南瓜正当时';
+}
+function jpSeason() {
+  const m = new Date().getMonth();
+  if (m<=1||m===11) return '冬 — 大根・白菜・牡蠣が旬';
+  if (m<=4) return '春 — たけのこ・菜の花・あさりが旬';
+  if (m<=7) return '夏 — とうもろこし・ナス・枝豆が旬';
+  return '秋 — さつまいも・きのこ・さんまが旬';
+}
+function ukSeason() {
+  const m = new Date().getMonth();
+  if (m<=1||m===11) return 'winter — root veg, leeks, sprouts cheapest';
+  if (m<=4) return 'spring — asparagus, purple sprouting broccoli, peas';
+  if (m<=7) return 'summer — courgettes, tomatoes, soft fruits';
+  return 'autumn — squash, mushrooms, apples, leeks';
+}
+
+const REGION_DB = {
+  // Malaysia
+  'kuala lumpur': { flag:'🇲🇾', cuisine:'Malaysian Chinese', spice:'medium-high', staples:['belacan','kicap manis','santan','serai','pandan','oyster sauce'], stores:['Jaya Grocer','AEON','Village Grocer','99 Speedmart','Lotus\'s'], signature:['nasi lemak','char kway teow','bak kut teh','curry laksa','pan mee','wantan mee'], season_now:mySeason() },
+  'penang':       { flag:'🇲🇾', cuisine:'Penang Hawker', spice:'high', staples:['belacan','petis udang','asam jawa','serai','kaffir lime'], stores:['Sunshine','Tesco Penang','AEON Bukit Mertajam','Caring Pharmacy'], signature:['char kway teow','assam laksa','prawn mee','nasi kandar','cendol','rojak'], season_now:mySeason() },
+  'johor bahru':  { flag:'🇲🇾', cuisine:'Johor Malay-Chinese', spice:'medium', staples:['belacan','kicap','santan','buah keluak'], stores:['AEON Tebrau','Giant JB','KK Super Mart','Lotus\'s'], signature:['mee rebus johor','laksa johor','nasi briyani','otak-otak','sup kambing'], season_now:mySeason() },
+  'bangi':        { flag:'🇲🇾', cuisine:'Selangor Halal-Malaysian', spice:'medium', staples:['belacan','kicap manis','santan','halia','serai'], stores:['AEON Bangi','Lotus\'s Kajang','Giant Bangi','NSK Bangi'], signature:['nasi lemak','ikan bakar','ayam goreng berempah','mee goreng mamak','roti canai'], season_now:mySeason() },
+  'petaling jaya':{ flag:'🇲🇾', cuisine:'PJ Multicultural', spice:'medium-high', staples:['belacan','kicap','santan','asam'], stores:['Jaya Grocer Starling','AEON SS2','Cold Storage 1Utama','Village Grocer'], signature:['pan mee','chili pan mee','bak kut teh','hakka mee','yong tau foo'], season_now:mySeason() },
+  // China
+  'shanghai':     { flag:'🇨🇳', cuisine:'沪菜·本帮菜', spice:'sweet-savory', staples:['生抽','老抽','绍兴黄酒','白糖','猪油','葱姜'], stores:['盒马鲜生','叮咚买菜','永辉超市','大润发','山姆'], signature:['红烧肉','糖醋排骨','生煎包','葱油面','本帮清蒸鱼','八宝饭'], season_now:cnSeason() },
+  'chengdu':      { flag:'🇨🇳', cuisine:'川菜·麻辣系', spice:'numbing-hot', staples:['郫县豆瓣酱','花椒','辣椒面','菜籽油','豆豉','泡椒'], stores:['盒马','红旗连锁','永辉','沃尔玛成都','天府通超市'], signature:['麻婆豆腐','夫妻肺片','回锅肉','担担面','水煮鱼','钵钵鸡'], season_now:cnSeason() },
+  'beijing':      { flag:'🇨🇳', cuisine:'京菜·北方口味', spice:'mild-savory', staples:['黄豆酱','芝麻酱','米醋','葱姜蒜','十三香'], stores:['盒马','物美超市','京东到家','7Fresh','华联'], signature:['炸酱面','涮羊肉','烤鸭饼卷','京酱肉丝','卤煮火烧'], season_now:cnSeason() },
+  'guangzhou':    { flag:'🇨🇳', cuisine:'粤菜·清淡鲜美', spice:'mild-umami', staples:['蚝油','生抽','豆豉','陈皮','葱姜'], stores:['盒马','百佳超市','华润万家','永旺'], signature:['清蒸鱼','白切鸡','肠粉','煲仔饭','云吞面','烧鹅'], season_now:cnSeason() },
+  // Japan
+  'tokyo':        { flag:'🇯🇵', cuisine:'東京·江戸風', spice:'umami-light', staples:['醤油','みりん','顆粒だし','清酒','ごま油'], stores:['イオン','西友','業務スーパー','ライフ','マルエツ'], signature:['親子丼','もつ煮','深川めし','ねぎま鍋','もんじゃ焼き','江戸前握り'], season_now:jpSeason() },
+  'osaka':        { flag:'🇯🇵', cuisine:'大阪·くいだおれ', spice:'dashi-rich', staples:['薄口醤油','白だし','みりん','白味噌','かつお節'], stores:['阪急オアシス','イカリスーパー','業務スーパー','ライフ'], signature:['たこ焼き','お好み焼き','串カツ','かすうどん','箱寿司','551の豚まん'], season_now:jpSeason() },
+  // English-speaking
+  'london':       { flag:'🇬🇧', cuisine:'British Multicultural', spice:'mild', staples:['olive oil','butter','garlic','worcestershire sauce','mixed herbs'], stores:['Tesco','Sainsbury\'s','ALDI','Lidl','Waitrose','M&S Food'], signature:['shepherd\'s pie','fish & chips','chicken tikka masala','full english','jacket potato'], season_now:ukSeason() },
+  'singapore':    { flag:'🇸🇬', cuisine:'Singaporean Hawker', spice:'medium', staples:['kecap manis','sambal','oyster sauce','sesame oil','fish sauce'], stores:['NTUC FairPrice','Cold Storage','Giant','Sheng Siong','Don Don Donki'], signature:['hainanese chicken rice','laksa','char kway teow','nasi goreng','bak chor mee','chilli crab'], season_now:mySeason() },
+  'default':      { flag:'🌍', cuisine:'Home Kitchen', spice:'your preference', staples:['salt','oil','soy sauce','garlic','onion'], stores:['local supermarket'], signature:['fried rice','pasta','stir-fry','omelette','soup'], season_now:'locally in season' },
+};
+
+function detectRegion(locationStr) {
+  const loc = (locationStr||'').toLowerCase().trim();
+  // Direct key match
+  for (const key of Object.keys(REGION_DB)) {
+    if (key !== 'default' && loc.includes(key)) return { key, ...REGION_DB[key] };
+  }
+  // Fuzzy / alias matching
+  const aliases = [
+    [/bangi|kajang|sepang|nilai|seremban/,  'bangi'],
+    [/petaling|pj\b|subang|shah alam|klang/, 'petaling jaya'],
+    [/penang|georgetown|batu ferringhi/,      'penang'],
+    [/johor|jb\b|iskandar/,                  'johor bahru'],
+    [/malaysia|kuala lumpur|kl\b|ampang|chow kit|mont kiara|damansara|kepong|puchong/, 'kuala lumpur'],
+    [/sabah|kota kinabalu|sandakan/,          'kuala lumpur'],
+    [/sichuan|chongqing|leshan|mianyang/,     'chengdu'],
+    [/guangdong|shenzhen|dongguan|foshan/,    'guangzhou'],
+    [/zhejiang|hangzhou|ningbo|wenzhou/,      'shanghai'],
+    [/china|beijing|tianjin|wuhan|nanjing|hefei|jinan/, 'beijing'],
+    [/osaka|kyoto|kobe|nara|hyogo/,           'osaka'],
+    [/japan|tokyo|yokohama|saitama|chiba/,    'tokyo'],
+    [/singapore|sg\b/,                        'singapore'],
+    [/uk|united kingdom|england|manchester|birmingham|bristol|leeds|glasgow/, 'london'],
+  ];
+  for (const [re, key] of aliases) {
+    if (re.test(loc)) return { key, ...REGION_DB[key] };
+  }
+  return { key:'default', ...REGION_DB['default'] };
+}
+
+// ── Render a region badge below location input ──
+function updateRegionBadge(loc) {
+  const r = detectRegion(loc);
+  let el = document.getElementById('regionBadge');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'regionBadge';
+    el.style.cssText = 'font-size:11px;color:var(--muted);margin-top:5px;font-family:var(--font-mono);';
+    document.getElementById('locationInput').parentNode.appendChild(el);
+  }
+  if (r.key === 'default') { el.textContent = ''; return; }
+  el.innerHTML = `${r.flag} <strong style="color:var(--ink)">${r.cuisine}</strong> · ${r.spice} · ${r.season_now}`;
+}
+
+function buildSystemPrompt(b, diningMode, skill, location, urgent, half, fresh) {
+  const lang = currentLang;
+  const allPantry = pantryItems.map(i => `${i.name}(${i.status})`).join(', ') || 'none';
+  const favStr = favorites.join(', ') || 'none specified';
+  const dietStr = selectedDiet.length ? selectedDiet.join(', ') : 'none';
+  const region = detectRegion(location);
+
+  const skillDescMap = {
+    none:     'cannot cook — only microwave, boil water, or no-heat assembly',
+    basic:    'simple stir-fry, scramble eggs, boil noodles, pan-fry',
+    medium:   'make sauces, use oven, deglaze, intermediate techniques',
+    advanced: 'braising, marinating, complex layered flavours, knife skills'
+  };
+  const langName = {en:'English',zh:'Simplified Chinese',ms:'Bahasa Malaysia',ja:'Japanese'}[lang] || 'English';
+
+  return `You are Budget Chef, a hyper-localised meal planning AI. Output ONLY valid JSON. No markdown, no prose before or after.
+
+=== USER PROFILE ===
+Language for ALL output text: ${langName}
+Location: ${location}
+Region detected: ${region.cuisine} ${region.flag}
+Daily food budget: ${b.sym}${b.daily.toFixed(2)} ${b.currency}
+Dining mode: ${diningMode}
+Cooking skill: ${skill} (${skillDescMap[skill]})
+Pantry: ${allPantry}
+URGENT near-expiry items (MUST USE): ${urgent.join(', ') || 'none'}
+HALF-used items (prioritise): ${half.join(', ') || 'none'}
+Favourite dishes: ${favStr}
+Dietary restrictions: ${dietStr}
+
+=== REGIONAL COOKING CONTEXT ===
+Cuisine: ${region.cuisine}
+Typical spice/flavour profile: ${region.spice}
+Staple condiments (always available, zero cost): ${region.staples.join(', ')}
+Local stores where discounts appear: ${region.stores.join(', ')}
+Signature regional dishes for inspiration: ${region.signature.join(', ')}
+Seasonal produce cheapest right now: ${region.season_now}
+
+=== STRICT RULES ===
+1. ALL dish names, taglines, steps, tips MUST be in ${langName}.
+2. Recipes MUST feel authentically ${region.cuisine}. Use regional condiments. Reference local dish names.
+3. URGENT items MUST appear in ≥1 plan. HALF items should appear where possible.
+4. Avoid buying new ingredients unless truly necessary. Staple condiments are free.
+5. If ingredient combo is odd, set blackbox:true, invent a fun name, write blackbox_story.
+6. Match ALL steps to skill level "${skill}" — ${skillDescMap[skill]}.
+7. Add emoji cues in every step (🔥=heat 🥄=stir ⏱️=wait 🧂=season 🍳=fry 💧=add liquid).
+8. Incorporate at least ONE currently seasonal ingredient where budget allows.
+9. delivery mode: replace steps with delivery_note (what to order, which app/restaurant type). Set steps:[].
+10. frugal: add quick_hack field (fastest shortcut).
+11. quality: add plating_tip field (one sentence visual presentation tip).
+12. balanced: add nutrition_balance:{protein_pct, carb_pct, fat_pct} (rough %, must sum to 100).
+
+=== BUDGET TARGETS ===
+frugal: under ${b.sym}${(b.daily*0.50).toFixed(2)} — pantry-first, zero new purchases preferred
+quality: up to ${b.sym}${(b.daily*0.85).toFixed(2)} — use best available regional discount ingredients
+balanced: around ${b.sym}${(b.daily*0.70).toFixed(2)} — protein + vegetable + carb all present
+
+Respond with this EXACT JSON (no extra fields, no comments):
+{
+  "region_detected": "${region.cuisine}",
+  "frugal": {
+    "dish_name": "...",
+    "tagline": "...",
+    "blackbox": false,
+    "blackbox_story": null,
+    "ingredients": [{"name":"...","amount":"...","cost":0.00,"from_pantry":true,"urgent":false}],
+    "steps": ["🔥 step..."],
+    "quick_hack": "...",
+    "total_cost": 0.00,
+    "estimated_calories": 0,
+    "cook_time_min": 0,
+    "servings": 1,
+    "nutrition_tip": "...",
+    "delivery_note": null
+  },
+  "quality": {
+    "dish_name": "...", "tagline": "...", "blackbox": false, "blackbox_story": null,
+    "ingredients": [...], "steps": [...],
+    "plating_tip": "...",
+    "total_cost": 0.00, "estimated_calories": 0, "cook_time_min": 0, "servings": 1,
+    "nutrition_tip": "...", "delivery_note": null
+  },
+  "balanced": {
+    "dish_name": "...", "tagline": "...", "blackbox": false, "blackbox_story": null,
+    "ingredients": [...], "steps": [...],
+    "nutrition_balance": {"protein_pct": 0, "carb_pct": 0, "fat_pct": 0},
+    "total_cost": 0.00, "estimated_calories": 0, "cook_time_min": 0, "servings": 1,
+    "nutrition_tip": "...", "delivery_note": null
+  },
+  "esg": {
+    "urgent_items_used": [], "half_items_used": [],
+    "waste_saved_kg": 0.00, "co2_saved_kg": 0.00, "badge_level": 1
+  },
+  "shopping_list": [{"item":"...","qty":"...","est_cost":0.00,"store":"..."}]
+}`;
+}
+async function callClaude(prompt) {
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "anthropic-dangerous-direct-browser-access": "true"
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 2500,
+      messages: [{ role: "user", content: prompt }]
+    })
+  });
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`API error ${response.status}: ${err}`);
+  }
+  const data = await response.json();
+  const text = data.content.map(c => c.text || '').join('');
+  const clean = text.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+  // Find the JSON object in the response (sometimes model adds preamble)
+  const jsonMatch = clean.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON found in response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+// ══════════════════════════════════════════════
+// RENDER RESULTS
+// ══════════════════════════════════════════════
+
+function renderResults(b, data, urgentItems, halfItems) {
+  const location = document.getElementById('locationInput').value || '';
+  const region = detectRegion(location);
+
+  const cls = b.healthIdx===0?'ok':b.healthIdx===1?'':b.healthIdx===2?'warn':'danger';
+  const fillColor = ['var(--sage)','var(--sky)','var(--gold)','var(--ember)'][b.healthIdx];
+  document.getElementById('dailyAllowanceDisplay').className = `budget-big ${cls}`;
+  document.getElementById('dailyAllowanceDisplay').textContent = `${b.sym}${b.daily.toFixed(2)}`;
+  const healthArr = LANGS[currentLang]?.budget_health || LANGS.en.budget_health;
+  document.getElementById('budgetStatusLine').textContent = healthArr[b.healthIdx] || '';
+  document.getElementById('budgetMeta').innerHTML =
+    `${region.flag} <strong>${region.cuisine}</strong><br>`+
+    `${b.sym}${b.spent} spent · ${b.daysRemaining}d left · ${b.pct}% used`;
+
+  const fill = document.getElementById('progressFill');
+  fill.style.background = fillColor;
+  setTimeout(() => { fill.style.width = b.pct + '%'; }, 100);
+
+  if (urgentItems.length > 0) {
+    document.getElementById('urgencyNotice').classList.remove('hidden');
+    document.getElementById('urgencyText').innerHTML =
+      `<strong>${t('urgency_prefix')}</strong>${urgentItems.join(', ')}`;
+  }
+
+  if (region.season_now && region.key !== 'default') {
+    let tip = document.getElementById('seasonalTip');
+    if (!tip) {
+      tip = document.createElement('div');
+      tip.id = 'seasonalTip';
+      tip.style.cssText = 'font-size:11px;color:var(--sage);padding:6px 10px;background:#f0f8f0;border-radius:var(--radius);margin-bottom:12px;font-family:var(--font-mono);';
+      document.getElementById('budgetSummaryCard').after(tip);
+    }
+    tip.textContent = `🌱 ${region.season_now}`;
+  }
+
+  ['frugal','quality','balanced'].forEach(key => {
+    const plan = data[key];
+    if (plan) document.getElementById(`plan-${key}`).innerHTML = renderPlanCard(key, plan, b);
+  });
+
+  if (data.esg) renderESG(data.esg, b);
+  if (data.shopping_list?.length) renderShoppingList(data.shopping_list, b);
+
+  saveToHistory({ date: new Date().toLocaleDateString(), region: region.cuisine,
+    flag: region.flag, budget: b.daily, currency: b.sym,
+    plans: { frugal: data.frugal?.dish_name, quality: data.quality?.dish_name, balanced: data.balanced?.dish_name }});
+
+  document.getElementById('resultsTitle').textContent = `${region.flag} ${t('results_title')}`;
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('setupSection').style.display = 'none';
+  setTimeout(() => document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'}), 100);
+}
+
+function renderShoppingList(list, b) {
+  let el = document.getElementById('shoppingListSection');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'shoppingListSection';
+    document.getElementById('esgCard').after(el);
+  }
+  const rows = list.map(item =>
+    `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--warm);font-size:13px">
+      <span>${item.item} <span style="color:var(--muted);font-size:11px">${item.qty}</span></span>
+      <span style="display:flex;gap:10px;align-items:center">
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${item.store||''}</span>
+        <span style="font-family:var(--font-mono);font-size:12px">${item.est_cost>0?b.sym+item.est_cost.toFixed(2):'—'}</span>
+      </span>
+    </div>`
+  ).join('');
+  const total = list.reduce((s,i)=>s+(i.est_cost||0),0);
+  el.innerHTML = `
+    <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;display:flex;align-items:center;gap:8px">
+      🛒 Shopping List <span style="flex:1;height:1px;background:var(--border);display:inline-block;vertical-align:middle"></span>
+    </div>
+    <div class="card">
+      ${rows}
+      <div style="display:flex;justify-content:space-between;padding-top:10px;font-weight:600;font-size:13px">
+        <span>Total to buy</span><span style="font-family:var(--font-mono)">${b.sym}${total.toFixed(2)}</span>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="copyShoppingList()" style="font-size:11px;padding:6px 12px">📋 Copy list</button>
+        <button class="btn btn-outline" onclick="downloadShoppingList()" style="font-size:11px;padding:6px 12px">⬇️ Download .txt</button>
+      </div>
+    </div>`;
+  window._shoppingList = list; window._shoppingB = b;
+}
+
+function copyShoppingList() {
+  const lines = (window._shoppingList||[]).map(i=>`${i.item} (${i.qty}) — ${window._shoppingB?.sym||''}${i.est_cost>0?i.est_cost.toFixed(2):'?'}`);
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+    const btn=event.target; btn.textContent='✓ Copied!'; setTimeout(()=>btn.textContent='📋 Copy list',2000);
+  }).catch(()=>{ prompt('Copy this:', lines.join('\n')); });
+}
+
+function downloadShoppingList() {
+  const b=window._shoppingB||{sym:''};
+  const lines=['Budget Chef · Shopping List','',
+    ...(window._shoppingList||[]).map(i=>`[ ] ${i.item} (${i.qty}) — ${b.sym}${i.est_cost>0?i.est_cost.toFixed(2):'?'}  @ ${i.store||'supermarket'}`),
+    '',`Total: ${b.sym}${(window._shoppingList||[]).reduce((s,i)=>s+(i.est_cost||0),0).toFixed(2)}`];
+  const blob=new Blob([lines.join('\n')],{type:'text/plain'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='budget-chef-shopping.txt'; a.click();
+}
+
+// Meal history (sessionStorage so it persists within session)
+let mealHistory = [];
+function saveToHistory(entry) {
+  mealHistory.unshift(entry);
+  if (mealHistory.length > 10) mealHistory.pop();
+  renderHistory();
+}
+function renderHistory() {
+  let el = document.getElementById('historySection');
+  if (!el || mealHistory.length < 2) return;
+  el.innerHTML = `
+    <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px">📅 Recent Plans</div>
+    <div class="card" style="padding:0;overflow:hidden">
+      ${mealHistory.slice(1).map(h=>`
+        <div style="display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--cream);font-size:12px">
+          <span>${h.flag} ${h.date} · <span style="color:var(--muted)">${h.region}</span></span>
+          <span style="color:var(--muted);font-family:var(--font-mono)">${h.currency}${h.budget?.toFixed(2)}</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+
+function renderPlanCard(strategy, plan, b) {
+  const strategyTags = {
+    frugal: `<span class="recipe-tag tag-budget">${t('tab_frugal').replace('💸 ','')}</span>`,
+    quality: `<span class="recipe-tag tag-quality">${t('tab_quality').replace('✨ ','')}</span>`,
+    balanced: `<span class="recipe-tag tag-balanced">${t('tab_balanced').replace('⚖️ ','')}</span>`,
+  };
+  const blackboxTag = plan.blackbox ? `<span class="recipe-tag tag-creative">⚗️ Fusion</span>` : '';
+
+  const ingredientRows = (plan.ingredients||[]).map(ing => {
+    const urgCls = ing.urgent ? 'ingredient-urgent' : '';
+    const pantryNote = ing.from_pantry ? `<span style="color:var(--sage);font-size:10px;margin-left:4px">✓ pantry</span>` : '';
+    return `<div class="ingredient-row">
+      <span class="ingredient-name ${urgCls}">${ing.name} <span style="color:var(--muted);font-size:12px">${ing.amount}</span>${pantryNote}</span>
+      <span class="ingredient-price">${ing.cost>0?b.sym+ing.cost.toFixed(2):'—'}</span>
+    </div>`;
+  }).join('');
+
+  const stepsList = (plan.steps||[]).map((step) =>
+    `<div class="step-line">${step}</div>`
+  ).join('');
+  const stepsWrapper = `<div class="step-list">${stepsList}</div>`;
+
+  const deliveryNote = plan.delivery_note
+    ? `<div style="background:var(--cream);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-size:13px;margin-top:10px">
+        🛵 <strong>Order:</strong> ${plan.delivery_note}</div>` : '';
+
+  const blackboxBanner = plan.blackbox && plan.blackbox_story
+    ? `<div style="background:#fff0f8;border:1px solid #e8b0d8;border-radius:var(--radius);padding:12px 14px;margin-top:10px;font-size:12px;color:#7a2060">
+        ${t('blackbox_intro')}<br><em>${plan.blackbox_story}</em></div>` : '';
+
+  // strategy-specific extra
+  const quickHack = plan.quick_hack
+    ? `<div style="background:#fffbe8;border:1px solid #e8d870;border-radius:var(--radius);padding:8px 12px;margin-top:10px;font-size:12px">
+        ⚡ <strong>Quick hack:</strong> ${plan.quick_hack}</div>` : '';
+
+  const platingTip = plan.plating_tip
+    ? `<div style="background:#f0f4ff;border:1px solid #b8c8e8;border-radius:var(--radius);padding:8px 12px;margin-top:10px;font-size:12px">
+        🍽 <strong>Plating tip:</strong> ${plan.plating_tip}</div>` : '';
+
+  const nb = plan.nutrition_balance;
+  const nutritionBar = nb
+    ? `<div style="margin-top:12px">
+        <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.15em;color:var(--muted);margin-bottom:4px;text-transform:uppercase">Macros</div>
+        <div style="display:flex;height:8px;border-radius:4px;overflow:hidden;gap:1px">
+          <div style="flex:${nb.protein_pct||0};background:#e87a5a" title="Protein ${nb.protein_pct}%"></div>
+          <div style="flex:${nb.carb_pct||0};background:#e8c547" title="Carbs ${nb.carb_pct}%"></div>
+          <div style="flex:${nb.fat_pct||0};background:#7ab87a" title="Fat ${nb.fat_pct}%"></div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:3px;font-size:10px;font-family:var(--font-mono);color:var(--muted)">
+          <span style="color:#e87a5a">P ${nb.protein_pct||0}%</span>
+          <span style="color:#b89030">C ${nb.carb_pct||0}%</span>
+          <span style="color:#5a8a5a">F ${nb.fat_pct||0}%</span>
+        </div>
+      </div>` : '';
+
+  const nutritionNote = plan.nutrition_tip
+    ? `<div style="font-size:11px;color:var(--muted);font-style:italic;margin-top:8px">💡 ${plan.nutrition_tip}</div>` : '';
+
+  return `<div class="recipe-card">
+    <div class="recipe-header">
+      <div style="flex:1">
+        <div class="recipe-name">${plan.dish_name}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">${plan.tagline||''}</div>
+        <div class="recipe-tags" style="margin-top:8px">${strategyTags[strategy]}${blackboxTag}</div>
+      </div>
+      <div class="recipe-cost">${b.sym}${plan.total_cost?.toFixed(2)||'—'}</div>
+    </div>
+    <div class="recipe-body">
+      <div class="section-label" style="margin-bottom:8px">${t('ingredients')}</div>
+      <div class="recipe-ingredients">${ingredientRows}</div>
+      ${blackboxBanner}${quickHack}${platingTip}
+      ${deliveryNote}
+      ${plan.steps?.length ? `<div class="section-label" style="margin:14px 0 8px">${t('steps')}</div>${stepsWrapper}` : ''}
+      ${nutritionBar}${nutritionNote}
+    </div>
+    <div class="recipe-footer">
+      <div class="recipe-stats">
+        <div class="stat-pill">🔥 <strong>${plan.estimated_calories||'—'}</strong> ${t('calories')}</div>
+        <div class="stat-pill">⏱ <strong>${plan.cook_time_min||'—'}</strong> ${t('time')}</div>
+        <div class="stat-pill">🍽 <strong>${plan.servings||1}</strong> ${t('servings')}</div>
+      </div>
+      <button class="btn btn-outline" onclick="saveRecipe('${strategy}')" style="font-size:11px;padding:6px 12px">${t('save_btn')}</button>
+    </div>
+  </div>`;
+}
+
+
+function renderESG(esg, b) {
+  const badges = [t('esg_badge_1'), t('esg_badge_2'), t('esg_badge_3')];
+  const badge = badges[Math.min((esg.badge_level || 1) - 1, 2)];
+  document.getElementById('esgBadge').textContent = badge;
+
+  document.getElementById('esgBanner').innerHTML = `
+    <div class="esg-stat"><div class="esg-num">${esg.waste_saved_kg?.toFixed(2) || '0.00'} kg</div><div class="esg-lbl">${t('esg_waste')}</div></div>
+    <div class="esg-stat"><div class="esg-num">${esg.co2_saved_kg?.toFixed(2) || '0.00'} kg</div><div class="esg-lbl">${t('esg_co2')}</div></div>
+    <div class="esg-stat"><div class="esg-num">${((esg.co2_saved_kg || 0) / 0.21).toFixed(1)} km</div><div class="esg-lbl">${t('esg_km')}</div></div>
+  `;
+
+  const msg = t('esg_msg')
+    .replace('{w}', esg.waste_saved_kg?.toFixed(2) || '0')
+    .replace('{co2}', esg.co2_saved_kg?.toFixed(2) || '0');
+  document.getElementById('esgMessage').textContent = msg;
+}
+
+// ══════════════════════════════════════════════
+// PLAN TABS
+// ══════════════════════════════════════════════
+
+function showPlan(key, btn) {
+  ['frugal','quality','balanced'].forEach(k => {
+    document.getElementById(`plan-${k}`).classList.toggle('hidden', k !== key);
+  });
+  document.querySelectorAll('.plan-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ══════════════════════════════════════════════
+// FALLBACK MOCK DATA
+// ══════════════════════════════════════════════
+
+function buildMockData(b, diningMode, skill) {
+  const location = document.getElementById('locationInput').value || '';
+  const region = detectRegion(location);
+  const sym = b.sym;
+  const urgent = pantryItems.filter(i => i.status === 'expiring').map(i => i.name);
+  const half = pantryItems.filter(i => i.status === 'half').map(i => i.name);
+
+  // Detect blackbox combo (unusual pairs)
+  const pantryNames = pantryItems.map(i => i.name.toLowerCase());
+  const hasOddCombo = pantryNames.includes('oats') || pantryNames.includes('燕麦') ||
+    (pantryNames.some(n => n.includes('chili') || n.includes('老干妈')) && pantryNames.some(n => n.includes('oat') || n.includes('燕麦')));
+
+  const blackboxDish = currentLang === 'zh' ?
+    {name:'老干妈燕麦香辣粥',story:'将燕麦用高汤煮成稠粥，加入一勺老干妈翻炒均匀，撒上葱花和芝麻，淋少许香油。辣鲜咸香，意外地下饭！'} :
+    {name:'Chili Oil Power Oats',story:'Cook oats in savory broth, stir in chili oil sauce, top with a fried egg. Season with soy sauce and sesame oil. Unexpectedly delicious!'};
+
+  const frugalIngredients = [
+    ...urgent.slice(0,2).map(n => ({name:n,amount:'all remaining',cost:0,from_pantry:true,urgent:true})),
+    ...half.slice(0,1).map(n => ({name:n,amount:'½ portion',cost:0,from_pantry:true,urgent:false})),
+    {name:currentLang==='zh'?'鸡蛋':'eggs',amount:'2',cost:0,from_pantry:true,urgent:false},
+  ];
+  if (frugalIngredients.length === 0) frugalIngredients.push({name:'instant noodles',amount:'1 pack',cost:1.5,from_pantry:false,urgent:false});
+
+  const frugalCost = frugalIngredients.reduce((s,i) => s + (i.cost||0), 0);
+  const qualityCost = Math.min(b.daily * 0.85, b.daily * 0.8);
+  const balancedCost = Math.min(b.daily * 0.70, b.daily * 0.65);
+
+  const isZh = currentLang === 'zh';
+  const isMy = currentLang === 'ms';
+  const isJa = currentLang === 'ja';
+
+  return {
+    frugal: {
+      dish_name: isZh ? '冰箱清仓炒饭' : isMy ? 'Nasi Goreng Peti Sejuk' : isJa ? '冷蔵庫一掃チャーハン' : 'Pantry Clear-Out Fried Rice',
+      tagline: isZh ? '零浪费，最省钱' : isMy ? 'Jimat & Kosongkan Peti Sejuk' : isJa ? '節約・無駄なし' : 'Zero waste, maximum savings',
+      blackbox: hasOddCombo,
+      blackbox_story: hasOddCombo ? blackboxDish.story : null,
+      ingredients: frugalIngredients,
+      steps: isZh
+        ? ['锅烧热，倒少量油','加入所有临期蔬菜翻炒2分钟','推开食材，炒鸡蛋至半熟','加入剩饭翻炒，用酱油和盐调味','出锅前撒葱花']
+        : isMy
+        ? ['Panaskan minyak dalam kuali','Tumis sayur-sayuran yang hampir luput 2 minit','Tolak ke tepi, goreng telur setengah masak','Masukkan nasi, kacau rata, perasakan dengan kicap','Taburkan daun bawang sebelum hidang']
+        : isJa
+        ? ['フライパンを熱し、油を少し引く','期限切れ野菜を2分炒める','端に寄せ、卵を半熟に炒める','ご飯を加え、醤油・塩で味付け','ネギを散らして完成']
+        : ['Heat oil in pan','Stir-fry all near-expiry vegetables 2 min','Push aside, scramble eggs until half-set','Add rice, toss together, season with soy sauce','Garnish with spring onion'],
+      total_cost: Math.round(frugalCost * 100) / 100,
+      estimated_calories: 420,
+      cook_time_min: 12,
+      servings: 1,
+      nutrition_tip: isZh ? '加入一个鸡蛋可补充蛋白质，避免肌肉流失。' : isMy ? 'Tambah telur untuk protein dan tenaga.' : isJa ? '卵1個でタンパク質補給。' : 'Adding an egg provides complete protein.',
+      delivery_note: diningMode === 'delivery' ? (isZh ? '点一份蛋炒饭，约¥15，多数外卖平台均有' : 'Order egg fried rice, ~'+sym+'8 on most delivery apps') : null,
+    },
+    quality: {
+      dish_name: isZh ? '半价三文鱼米饭套' : isMy ? 'Mangkuk Salmon Separuh Harga' : isJa ? '半額サーモン丼' : 'Half-Price Salmon Rice Bowl',
+      tagline: isZh ? '今晚值得好好吃一顿' : isMy ? 'Jimat tapi mewah rasa' : isJa ? 'お買い得で豪華な一皿' : 'Treat yourself without guilt',
+      blackbox: false,
+      blackbox_story: null,
+      ingredients: [
+        {name:isZh?'折扣三文鱼(200g)':isMy?'Salmon diskaun (200g)':isJa?'割引サーモン(200g)':'Discount salmon (200g)',amount:'1 pack',cost: Math.round(b.daily * 0.4 * 100)/100,from_pantry:false,urgent:false},
+        {name:isZh?'西兰花':isMy?'Brokoli':isJa?'ブロッコリー':'broccoli',amount:isZh?'半棵':isMy?'separuh':isJa?'半房':'½ head',cost: Math.round(b.daily * 0.08 * 100)/100,from_pantry:false,urgent:false},
+        {name:isZh?'米饭':isMy?'Nasi':isJa?'ご飯':'steamed rice',amount:isZh?'1碗':isMy?'1 mangkuk':isJa?'茶碗1杯':'1 bowl',cost:0,from_pantry:true,urgent:false},
+        ...urgent.slice(0,1).map(n => ({name:n,amount:isZh?'适量':'some',cost:0,from_pantry:true,urgent:true})),
+      ],
+      steps: isZh
+        ? ['三文鱼用盐、柠檬汁腌制5分钟','中火煎三文鱼每面3分钟至金黄','西兰花焯水2分钟，捞出沥干','将米饭装碗，铺上三文鱼和西兰花','淋上酱油和芝麻油，点缀芝麻']
+        : isMy
+        ? ['Perapkan salmon dengan garam dan jus limau 5 minit','Goreng salmon di atas api sederhana 3 minit setiap sisi','Rebus brokoli 2 minit, toskan','Susun nasi dalam mangkuk, letakkan salmon dan brokoli','Siramkan kicap dan minyak bijan, taburkan bijan']
+        : isJa
+        ? ['鮭を塩・レモン汁で5分マリネ','中火で両面3分ずつ焼く','ブロッコリーを2分茹でて水切り','ご飯をよそい、鮭とブロッコリーを盛る','醤油・ごま油・ごまをかけて完成']
+        : ['Marinate salmon with salt and lemon juice 5 min','Pan-fry salmon medium heat 3 min per side until golden','Blanch broccoli 2 min, drain','Arrange rice in bowl, top with salmon and broccoli','Drizzle soy sauce and sesame oil, garnish with sesame'],
+      total_cost: Math.round(qualityCost * 100) / 100,
+      estimated_calories: 580,
+      cook_time_min: 18,
+      servings: 1,
+      nutrition_tip: isZh ? '三文鱼富含Omega-3，搭配西兰花是绝佳的抗炎组合。' : isMy ? 'Salmon kaya Omega-3, sangat baik untuk otak dan jantung.' : isJa ? 'サーモンのオメガ3が脳と心臓に効果的。' : 'Salmon\'s omega-3s + broccoli\'s vitamin C = anti-inflammatory combo.',
+      delivery_note: diningMode === 'delivery' ? (isZh ? '点一份三文鱼盖饭，推荐日料店或盒马' : 'Order salmon don from a Japanese restaurant or meal-kit delivery') : null,
+    },
+    balanced: {
+      dish_name: isZh ? '蛋白蔬菜均衡套餐' : isMy ? 'Set Seimbang Protein & Sayur' : isJa ? 'バランス栄養セット' : 'Balanced Protein + Greens Set',
+      tagline: isZh ? '蛋白质+蔬菜+主食，营养三角' : isMy ? 'Protein + sayur + karbohidrat — sempurna' : isJa ? 'たんぱく質＋野菜＋炭水化物の完璧な三角' : 'The nutrition triangle: protein, greens, carbs',
+      blackbox: false,
+      blackbox_story: null,
+      ingredients: [
+        {name:isZh?'豆腐':isMy?'Tahu':isJa?'豆腐':'firm tofu',amount:'½ block',cost:Math.round(b.daily * 0.06 * 100)/100,from_pantry: half.some(i=>i.toLowerCase().includes('tofu') || i.includes('豆腐')),urgent:false},
+        {name:isZh?'鸡蛋':isMy?'Telur':isJa?'卵':'eggs',amount:'2',cost:0,from_pantry:true,urgent:false},
+        ...urgent.slice(0,2).map(n => ({name:n,amount:isZh?'全部用完':'use all',cost:0,from_pantry:true,urgent:true})),
+        {name:isZh?'面条/米饭':isMy?'Mi/Nasi':isJa?'麺/ご飯':'noodles or rice',amount:isZh?'1人份':isMy?'1 hidangan':isJa?'1人前':'1 serving',cost:Math.round(b.daily * 0.06 * 100)/100,from_pantry:false,urgent:false},
+      ],
+      steps: isZh
+        ? ['豆腐切块，用厨房纸吸干水分，两面煎至金黄','鸡蛋打散，加少许盐，炒至半熟盛出','原锅加入临期蔬菜大火翻炒，加蒜末增香','加入豆腐和鸡蛋，淋生抽、蚝油调味','配白饭或面条上桌，均衡美味']
+        : isMy
+        ? ['Potong tahu, keringkan dengan tisu, goreng hingga keemasan','Pukul telur, masak setengah masak, ketepikan','Dalam kuali sama, tumis sayuran hampir luput dengan bawang putih','Masukkan tahu dan telur, perasakan dengan kicap dan sos tiram','Hidangkan dengan nasi atau mi']
+        : isJa
+        ? ['豆腐を切り、キッチンペーパーで水切り。両面きつね色に焼く','卵をほぐし、塩少々。半熟で取り出す','同じフライパンで期限切れ野菜とにんにくを炒める','豆腐と卵を戻し、醤油・オイスターソースで味付け','ご飯か麺と一緒に盛り付けて完成']
+        : ['Cut tofu, pat dry, pan-fry both sides until golden','Beat eggs with pinch of salt, scramble until half-cooked, set aside','In same pan, stir-fry near-expiry vegetables with garlic','Return tofu and eggs, season with soy sauce and oyster sauce','Serve over rice or noodles'],
+      total_cost: Math.round(balancedCost * 100) / 100,
+      estimated_calories: 510,
+      cook_time_min: 20,
+      servings: 1,
+      nutrition_tip: isZh ? '豆腐+鸡蛋提供完整氨基酸，比单独吃肉更高效。' : isMy ? 'Tahu dan telur bersama memberi asid amino lengkap.' : isJa ? '豆腐と卵の組み合わせで完全アミノ酸。' : 'Tofu + eggs together form a complete amino acid profile.',
+      delivery_note: diningMode === 'delivery' ? (isZh ? '点一份家常豆腐或者麻婆豆腐套餐' : 'Order mapo tofu set or tofu rice bowl') : null,
+    },
+    esg: {
+      urgent_items_used: urgent.slice(0,3),
+      half_items_used: half.slice(0,2),
+      waste_saved_kg: Math.round((urgent.length * 0.15 + half.length * 0.08) * 100) / 100 || 0.18,
+      co2_saved_kg: Math.round((urgent.length * 0.15 + half.length * 0.08) * 2.5 * 100) / 100 || 0.45,
+      badge_level: urgent.length >= 3 ? 3 : urgent.length >= 1 ? 2 : 1,
+    },
+    shopping_list: pantryItems.length < 2 ? [
+      { item: region.signature[0] ? `Ingredients for ${region.signature[0]}` : 'Fresh vegetables',
+        qty: '1 portion', est_cost: Math.round(b.daily * 0.25 * 100)/100, store: region.stores[0]||'supermarket' },
+      { item: 'Eggs or tofu', qty: '4 pcs / 300g', est_cost: Math.round(b.daily * 0.08 * 100)/100, store: region.stores[0]||'supermarket' },
+    ] : [],
+  };
+}
+
+// ══════════════════════════════════════════════
+// SAVE RECIPE
+// ══════════════════════════════════════════════
+
+function saveRecipe(strategy) {
+  savedRecipes.push({ strategy, ts: new Date().toISOString() });
+  const btn = event.target;
+  btn.textContent = '✓ Saved!';
+  btn.style.color = 'var(--sage)';
+  btn.style.borderColor = 'var(--sage)';
+  setTimeout(() => {
+    btn.textContent = t('save_btn');
+    btn.style.color = '';
+    btn.style.borderColor = '';
+  }, 2000);
+}
+
+// ══════════════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════════════
+
+function showLoading(show) {
+  const el = document.getElementById('loadingOverlay');
+  el.style.display = show ? 'flex' : 'none';
+}
+
+function resetForm() {
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('setupSection').style.display = 'block';
+  document.getElementById('generateBtn').disabled = false;
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+
+updateSkillDesc();
+applyTranslations();
+// Init region badge
+setTimeout(() => {
+  updateRegionBadge(document.getElementById('locationInput').value || '');
+  if (pantryItems.length === 0) loadDemo();
+}, 200);
+
+// ══════════════════════════════════════════════
+// TASTE PROFILE SYSTEM
+// ══════════════════════════════════════════════
+
+const SPICE_LABELS  = ['None 🫙','Mild 🌿','Medium 🌶','Hot 🌶🌶','Fiery 🔥'];
+const SWEET_LABELS  = ['Very Sweet 🍬','Slightly Sweet','Balanced ⚖️','Savoury','Very Savoury 🧄'];
+const SALT_LABELS   = ['Very Light','Light','Normal 🧂','Salty','Very Salty'];
+const SOUR_LABELS   = ['No Sour','Mild 🍋','Medium','Tangy','Very Tangy 🍊'];
+
+function updateTasteVals() {
+  const sp = parseInt(document.getElementById('spiceSlider').value);
+  const sw = parseInt(document.getElementById('sweetSlider').value);
+  const sa = parseInt(document.getElementById('saltSlider').value);
+  const so = parseInt(document.getElementById('sourSlider').value);
+  document.getElementById('spiceVal').textContent = SPICE_LABELS[sp];
+  document.getElementById('sweetVal').textContent = SWEET_LABELS[sw];
+  document.getElementById('saltVal').textContent  = SALT_LABELS[sa];
+  document.getElementById('sourVal').textContent  = SOUR_LABELS[so];
+  // Summary pills
+  const pills = [];
+  if (sp >= 3) pills.push({label: SPICE_LABELS[sp], active:true});
+  if (sw <= 1) pills.push({label:'Sweet tooth 🍬', active:true});
+  if (sw >= 3) pills.push({label:'Savoury lover 🧄', active:true});
+  if (so >= 2) pills.push({label:'Loves tanginess 🍋', active:true});
+  document.getElementById('tasteSummary').innerHTML = pills
+    .map(p => `<span class="taste-pill active">${p.label}</span>`).join('');
+}
+
+function getTasteProfile() {
+  return {
+    spice: SPICE_LABELS[parseInt(document.getElementById('spiceSlider').value)],
+    sweet: SWEET_LABELS[parseInt(document.getElementById('sweetSlider').value)],
+    salt:  SALT_LABELS[parseInt(document.getElementById('saltSlider').value)],
+    sour:  SOUR_LABELS[parseInt(document.getElementById('sourSlider').value)],
+  };
+}
+
+// ══════════════════════════════════════════════
+// NUTRITION TRACKER
+// ══════════════════════════════════════════════
+
+const DAILY_TARGETS = { cal: 2000, pro: 50, carb: 260, fat: 65 };
+let nutritionLog = [];   // [{cal, pro, carb, fat, dish, time}]
+
+function estimateMacros(plan) {
+  // Rough macro estimation from calorie + nutrition_balance
+  const cal = plan.estimated_calories || 400;
+  const nb = plan.nutrition_balance;
+  let pro, carb, fat;
+  if (nb) {
+    // Each gram: protein=4kcal, carb=4kcal, fat=9kcal
+    pro  = Math.round(cal * (nb.protein_pct/100) / 4);
+    carb = Math.round(cal * (nb.carb_pct/100)    / 4);
+    fat  = Math.round(cal * (nb.fat_pct/100)     / 9);
+  } else {
+    // Default estimates by strategy
+    pro = Math.round(cal * 0.22 / 4);
+    carb = Math.round(cal * 0.52 / 4);
+    fat = Math.round(cal * 0.26 / 9);
+  }
+  return { cal, pro, carb, fat };
+}
+
+function logMeal(plan, strategy) {
+  const macros = estimateMacros(plan);
+  nutritionLog.push({ ...macros, dish: plan.dish_name, strategy, time: new Date().toLocaleTimeString() });
+  updateNutritionDisplay();
+}
+
+function updateNutritionDisplay() {
+  const totals = nutritionLog.reduce((acc, m) => ({
+    cal:  acc.cal  + m.cal,
+    pro:  acc.pro  + m.pro,
+    carb: acc.carb + m.carb,
+    fat:  acc.fat  + m.fat,
+  }), {cal:0, pro:0, carb:0, fat:0});
+
+  const tracker = document.getElementById('nutritionTracker');
+  tracker.style.display = 'block';
+
+  const set = (id, val, target, unit='') => {
+    const pct = Math.min(100, Math.round(val / target * 100));
+    const over = val > target;
+    document.getElementById(`nbar-${id}`).style.width = pct + '%';
+    document.getElementById(`nbar-${id}`).style.background = over ? 'var(--ember)' : undefined;
+    document.getElementById(`nval-${id}`).textContent = `${val}${unit} / ${target}${unit}`;
+    document.getElementById(`nval-${id}`).style.color = over ? 'var(--ember)' : 'var(--ink)';
+  };
+
+  set('cal',  totals.cal,  DAILY_TARGETS.cal);
+  set('pro',  totals.pro,  DAILY_TARGETS.pro,  'g');
+  set('carb', totals.carb, DAILY_TARGETS.carb, 'g');
+  set('fat',  totals.fat,  DAILY_TARGETS.fat,  'g');
+
+  const note = nutritionLog.map(m => `🍽 ${m.dish} (+${m.cal}kcal, ${m.time})`).join(' · ');
+  document.getElementById('nutritionNote').textContent = note;
+}
+
+// ══════════════════════════════════════════════
+// WEEKLY HISTORY HEATMAP
+// ══════════════════════════════════════════════
+
+let weeklyHistory = JSON.parse(sessionStorage.getItem('bcHistory') || '{}');
+
+function saveToHistory(entry) {
+  const key = new Date().toISOString().slice(0,10);
+  weeklyHistory[key] = entry;
+  sessionStorage.setItem('bcHistory', JSON.stringify(weeklyHistory));
+  renderHistory();
+}
+
+function renderHistory() {
+  const el = document.getElementById('historySection');
+  if (!el) return;
+
+  // Build last 14 days
+  const days = [];
+  const today = new Date();
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0,10);
+    const label = d.toLocaleDateString(undefined, {weekday:'short', day:'numeric'}).replace(',',' ');
+    days.push({ key, label, isToday: i===0, data: weeklyHistory[key] || null });
+  }
+
+  const hasAny = days.some(d => d.data);
+  if (!hasAny) { el.innerHTML = ''; return; }
+
+  const cells = days.map(day => {
+    if (day.data) {
+      const meals = [day.data.plans?.frugal, day.data.plans?.quality, day.data.plans?.balanced]
+        .filter(Boolean).slice(0,1).join(', ');
+      return `<div class="day-cell has-data${day.isToday?' today':''}" title="${day.label}">
+        <div class="day-flag">${day.data.flag||'🍽'}</div>
+        <div class="day-label">${day.label.split(' ')[0]}</div>
+        <div class="day-tooltip">${day.label}<br>${day.data.region||''}<br>${day.data.currency||''}${day.data.budget?.toFixed(0)||''}</div>
+      </div>`;
+    }
+    return `<div class="day-cell empty${day.isToday?' today':''}">
+      <div class="day-label">${day.label.split(' ')[0]}</div>
+    </div>`;
+  }).join('');
+
+  const streak = calcStreak();
+
+  el.innerHTML = `
+    <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;display:flex;align-items:center;gap:8px">
+      📅 Meal History — Last 14 Days
+      <span style="flex:1;height:1px;background:var(--border);display:inline-block;vertical-align:middle"></span>
+      ${streak > 1 ? `<span style="color:var(--ember);font-weight:600">🔥 ${streak}-day streak</span>` : ''}
+    </div>
+    <div class="week-grid">${cells}</div>`;
+}
+
+function calcStreak() {
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0,10);
+    if (weeklyHistory[key]) streak++;
+    else if (i > 0) break;
+  }
+  return streak;
+}
+
+// ══════════════════════════════════════════════
+// STEP CARD RENDERER (replaces plain step list)
+// ══════════════════════════════════════════════
+
+const STEP_EMOJI_MAP = {
+  '🔥': {icon:'🔥', label:'Heat'},    '🍳': {icon:'🍳', label:'Fry'},
+  '🥄': {icon:'🥄', label:'Stir'},    '🔪': {icon:'🔪', label:'Cut'},
+  '💧': {icon:'💧', label:'Add liquid'},'⏱': {icon:'⏱️', label:'Wait'},
+  '⏱️': {icon:'⏱️', label:'Wait'},    '🧂': {icon:'🧂', label:'Season'},
+  '🍽': {icon:'🍽️', label:'Plate'},   '🫙': {icon:'🫙', label:'Mix'},
+  '🥣': {icon:'🥣', label:'Mix'},     '🧄': {icon:'🧄', label:'Prep'},
+  '🥚': {icon:'🥚', label:'Eggs'},    '🌿': {icon:'🌿', label:'Fresh'},
+  '📦': {icon:'📦', label:'Prep'},    '🍲': {icon:'🍲', label:'Simmer'},
+};
+
+function parseStepCard(stepText, idx) {
+  return `<div class="step-line">${stepText}</div>`;
+}
+
+// ══════════════════════════════════════════════
+// PATCH: getTasteProfile into buildSystemPrompt
+// We monkey-patch by overriding generatePlan to inject taste
+// ══════════════════════════════════════════════
+
+// Store original generatePlan reference if needed
+const _originalGeneratePlan = generatePlan;
+
+// Override to inject taste data into prompt context
+window._getTasteForPrompt = function() {
+  const tp = getTasteProfile();
+  return `\nUSER TASTE PROFILE:\n- Spice: ${tp.spice}\n- Sweet/Savoury: ${tp.sweet}\n- Salt: ${tp.salt}\n- Sour/Tangy: ${tp.sour}\nAdjust ALL recipes to match this taste profile. Increase/decrease spices, sweetness, acid accordingly.`;
+};
+
+// Patch renderPlanCard to use step cards & add log button
+const _origRenderPlanCard = renderPlanCard;
+window.renderPlanCard = function(strategy, plan, b) {
+  let html = _origRenderPlanCard(strategy, plan, b);
+
+  // Replace step-cards div content with new card style
+  if (plan.steps?.length) {
+    const newStepsHtml = `<div class="step-list">${plan.steps.map((s,i) => parseStepCard(s,i)).join('')}</div>`;
+    html = html.replace(
+      /<div class="step-list">[\s\S]*?<\/div>/,
+      newStepsHtml
+    );
+  }
+
+  // Add "Log this meal" button to footer
+  html = html.replace(
+    `<button class="btn btn-outline" onclick="saveRecipe('${strategy}')`,
+    `<button class="btn btn-outline" onclick="logMeal(window._lastPlans?.${strategy}, '${strategy}')" style="font-size:11px;padding:6px 12px">📊 Log meal</button>
+      <button class="btn btn-outline" onclick="saveRecipe('${strategy}')` 
+  );
+
+  return html;
+};
+
+// Store plans globally for log access
+const _origRenderResults = renderResults;
+window.renderResults = function(b, data, urgentItems, halfItems) {
+  window._lastPlans = data;
+  _origRenderResults(b, data, urgentItems, halfItems);
+  renderHistory();
+};
+
+// ══════════════════════════════════════════════
+// TASTE LABEL TRANSLATIONS
+// ══════════════════════════════════════════════
+
+function applyTasteTranslations() {
+  const lang = window.currentLang || 'en';
+  const tasteLabel = {en:'Taste Preferences',zh:'口味偏好',ms:'Pilihan Rasa',ja:'味の好み'}[lang]||'Taste Preferences';
+  const el = document.getElementById('tasteLabel');
+  if (el) el.textContent = tasteLabel;
+}
+
+// ══════════════════════════════════════════════
+// PATCH setLang to also update taste labels
+// ══════════════════════════════════════════════
+const _origSetLang = window.setLang;
+window.setLang = function(lang) {
+  _origSetLang(lang);
+  applyTasteTranslations();
+};
+
+// Init taste values
+updateTasteVals();
+renderHistory();
+
+
+// ══════════════════════════════════════════════
+// API KEY MANAGEMENT (localStorage, never leaves browser)
+// ══════════════════════════════════════════════
+function saveApiKey(val) {
+  const key = val.trim();
+  try { localStorage.setItem('bc_api_key', key); } catch(e) {}
+  updateKeyStatus(key);
+}
+
+function loadApiKey() {
+  try { return localStorage.getItem('bc_api_key') || ''; } catch(e) { return ''; }
+}
+
+function updateKeyStatus(key) {
+  const el = document.getElementById('apiKeyStatus');
+  const bar = document.getElementById('apiKeyBar');
+  if (!el) return;
+  if (key && key.startsWith('sk-ant-')) {
+    el.textContent = '✓ ready';
+    el.style.color = 'var(--sage)';
+    // Collapse bar after 2s
+    setTimeout(() => { bar.style.maxHeight = '0'; bar.style.overflow='hidden'; bar.style.padding='0 16px'; }, 2000);
+  } else if (key) {
+    el.textContent = '⚠ check key format';
+    el.style.color = 'var(--ember)';
+  } else {
+    el.textContent = 'not set — AI will use built-in recipes';
+    el.style.color = 'var(--faint)';
+    bar.style.maxHeight = '';
+    bar.style.overflow = '';
+    bar.style.padding = '';
+  }
+}
+
+// Patch callClaude to use stored key
+const _origCallClaude = callClaude;
+window.callClaude = async function(prompt) {
+  const key = loadApiKey();
+  if (!key) throw new Error('No API key');
+  
+  // Check if we're proxying via worker
+  const proxyUrl = window.CLAUDE_PROXY_URL;
+  const url = proxyUrl || 'https://api.anthropic.com/v1/messages';
+  
+  const headers = { 'Content-Type': 'application/json' };
+  if (!proxyUrl) {
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+    headers['x-api-key'] = key;
+  }
+  
+  const response = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2500,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`API ${response.status}: ${err}`);
+  }
+  const data = await response.json();
+  const text = data.content.map(c => c.text || '').join('');
+  const clean = text.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+  const jsonMatch = clean.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in response');
+  return JSON.parse(jsonMatch[0]);
+};
+
+// Init key on load
+(function() {
+  const stored = loadApiKey();
+  const input = document.getElementById('apiKeyInput');
+  if (input && stored) input.value = stored;
+  updateKeyStatus(stored);
+})();
+
+</script>
+</body>
+</html>
